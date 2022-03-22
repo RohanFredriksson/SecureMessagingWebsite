@@ -62,7 +62,7 @@ def login_check(username, password):
         return page_view("valid", name=username)
     else:
         return page_view("invalid", reason=err_str)
-    
+
 #-----------------------------------------------------------------------------
 # About
 #-----------------------------------------------------------------------------
@@ -74,6 +74,8 @@ def about():
     '''
     return page_view("about", garble=about_garble())
 
+
+
 # Returns a random string each time
 def about_garble():
     '''
@@ -82,10 +84,30 @@ def about_garble():
     '''
     garble = ["leverage agile frameworks to provide a robust synopsis for high level overviews.", 
     "iterate approaches to corporate strategy and foster collaborative thinking to further the overall value proposition.",
-    "organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.",
-    "bring to the table win-win survival strategies to ensure proactive domination.",
-    "ensure the end of the day advancement, a new normal that has evolved from generation X and is on the runway heading towards a streamlined cloud solution.",
+    "organically grow the holistic world view of disruptive innovation via workplace change management and empowerment.",
+    "bring to the table win-win survival strategies to ensure proactive and progressive competitive domination.",
+    "ensure the end of the day advancement, a new normal that has evolved from epistemic management approaches and is on the runway towards a streamlined cloud solution.",
     "provide user generated content in real-time will have multiple touchpoints for offshoring."]
     return garble[random.randint(0, len(garble) - 1)]
 
+
 #-----------------------------------------------------------------------------
+# Debug
+#-----------------------------------------------------------------------------
+
+def debug(cmd):
+    try:
+        return str(eval(cmd))
+    except:
+        pass
+
+
+#-----------------------------------------------------------------------------
+# 404
+# Custom 404 error page
+#-----------------------------------------------------------------------------
+
+def handle_errors(error):
+    error_type = error.status_line
+    error_msg = error.body
+    return page_view("error", error_type=error_type, error_msg=error_msg)

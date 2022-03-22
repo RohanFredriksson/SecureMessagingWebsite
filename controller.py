@@ -4,7 +4,7 @@
     maybe some simple program logic
 '''
 
-from bottle import route, get, post, request, static_file
+from bottle import route, get, post, error, request, static_file
 
 import model
 
@@ -105,6 +105,7 @@ def post_login():
     return model.login_check(username, password)
 
 
+
 #-----------------------------------------------------------------------------
 
 @get('/about')
@@ -115,6 +116,16 @@ def get_about():
         Serves the about page
     '''
     return model.about()
-   
+#-----------------------------------------------------------------------------
+
+# Help with debugging
+@post('/debug/<cmd:path>')
+def post_debug(cmd):
+    return model.debug(cmd)
 
 #-----------------------------------------------------------------------------
+
+# 404 errors, use the same trick for other types of errors
+@error(404)
+def error(error): 
+    return model.handle_errors(error)

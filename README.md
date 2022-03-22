@@ -25,6 +25,14 @@ All of your bottle relevant code should live here. The rest of your code should 
 
 The brains of the operation, here we perform whatever actual code we need, before calling our view object to return the templated HTML. This area should make calls to any 'databases' or other persistent storage that is handling user or other data.
 
+
+## HTTPS ##
+The library bottle used in the template does not support ssl. To enable bottle server in the template support https/ssl in python, one python library of WSGI that Bottle supports is needed. There are many choices, such as Gunicorn, CherryPy, etc. If you are still unclear, just google sth like how to enable Bottle server support HTTPS python. It is definitely fine if you use some libraries other than Bottle.
+
+
+
+
+
 ## Views ##
 
 Simply loads our HTML files and renders any elements of the template.
