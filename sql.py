@@ -110,4 +110,4 @@ class SQLDatabase():
             return False
 
     
-    def show_friendlist(self, )
+    #def show_friendlist(self, )

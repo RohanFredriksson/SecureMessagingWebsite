@@ -4,8 +4,7 @@
     maybe some simple program logic
 '''
 
-from bottle import route, get, post, error, request, static_file
-
+from bottle import route, get, post, error, request, redirect, static_file
 import model
 
 #-----------------------------------------------------------------------------
@@ -83,6 +82,13 @@ def get_login_controller():
         
         Serves the login page
     '''
+
+    # Get the session
+    session = request.environ.get('beaker.session')
+    if 'logged_in' in session:
+        if session['logged_in'] == True:
+            redirect('/about')
+
     return model.login_form()
 
 #-----------------------------------------------------------------------------
@@ -101,10 +107,11 @@ def post_login():
     username = request.forms.get('username')
     password = request.forms.get('password')
     
+    # Get the session.
+    session = request.environ.get('beaker.session')
+
     # Call the appropriate method
-    return model.login_check(username, password)
-
-
+    return model.login_check(session, username, password)
 
 #-----------------------------------------------------------------------------
 

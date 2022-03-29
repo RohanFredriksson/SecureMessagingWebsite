@@ -15,7 +15,17 @@
 #-----------------------------------------------------------------------------
 import os
 import sys
+import bottle
 from bottle import run
+
+from beaker.middleware import SessionMiddleware
+session_options = {
+    'session.type': 'file',
+    'session.data_dir': './session/',
+    'session.auto': True,
+}
+middleware = SessionMiddleware(bottle.app(), session_options)
+session = bottle.request.environ.get('beaker.session')
 
 #-----------------------------------------------------------------------------
 # You may eventually wish to put these in their own directories and then load 
@@ -31,7 +41,7 @@ import controller
 
 # It might be a good idea to move the following settings to a config file and then load them
 # Change this to your IP address or 0.0.0.0 when actually hosting
-host = 'localhost'
+host = '0.0.0.0'
 
 # Test port, change to the appropriate port to host
 port = 8081
@@ -44,7 +54,7 @@ def run_server():
         run_server
         Runs a bottle server
     '''
-    run(host=host, port=port, debug=debug)
+    run(host=host, port=port, debug=debug, app=middleware)
 
 #-----------------------------------------------------------------------------
 # Optional SQL support

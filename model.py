@@ -5,6 +5,7 @@
     It should exist as a separate layer to any database or data structure that you might be using
     Nothing here should be stateful, if it's stateful let the database handle it
 '''
+from numpy import True_
 import view
 import random
 
@@ -36,7 +37,7 @@ def login_form():
 #-----------------------------------------------------------------------------
 
 # Check the login credentials
-def login_check(username, password):
+def login_check(session, username, password):
     '''
         login_check
         Checks usernames and passwords
@@ -47,21 +48,18 @@ def login_check(username, password):
         Returns either a view for valid credentials, or a view for invalid credentials
     '''
 
-    # By default assume good creds
-    login = True
+    login = False
+    session['logged_in'] = False
     
-    if username != "admin": # Wrong Username
-        err_str = "Incorrect Username"
-        login = False
-    
-    if password != "password": # Wrong password
-        err_str = "Incorrect Password"
-        login = False
+    # For now we hardcode the login
+    if (username == 'admin' and password == 'password'):
+        login = True
+        session['logged_in'] = True_
         
     if login: 
         return page_view("valid", name=username)
     else:
-        return page_view("invalid", reason=err_str)
+        return page_view("invalid", reason="invalid")
 
 #-----------------------------------------------------------------------------
 # About
