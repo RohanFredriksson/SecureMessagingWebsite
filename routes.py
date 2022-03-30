@@ -128,6 +128,23 @@ def post_login():
 
 #-----------------------------------------------------------------------------
 
+@get('/logout')
+def get_logout():
+    '''
+        post_login
+        
+        Handles logout attempts
+    '''
+
+    # Get the session.
+    session = request.environ.get('beaker.session')
+
+    if 'logged_in' in session:
+        if session['logged_in'] == True:
+            session.delete()
+            redirect('/')
+    return page_view("invalid", reason="not logged in")
+
 @get('/about')
 def get_about():
     '''
