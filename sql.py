@@ -1,14 +1,11 @@
 import sqlite3
 import hashlib
-import random
-import string 
 
 # This class is a simple handler for all of our SQL database actions
 # Practicing a good separation of concerns, we should only ever call 
 # These functions from our models
 
 # If you notice anything out of place here, consider it to your advantage and don't spoil the surprise
-
 class SQLDatabase():
     '''
         Our SQL Database
@@ -46,6 +43,9 @@ class SQLDatabase():
         self.conn.execute("DROP TABLE IF EXISTS Users")
         self.conn.commit()
 
+        self.conn.execute("DROP TABLE IF EXISTS Friends")
+        self.conn.commit()
+
         # Create the users table
         self.cur.execute("""CREATE TABLE Users(
             id INTEGER PRIMARY KEY,
@@ -53,7 +53,14 @@ class SQLDatabase():
             password CHAR(64),
             admin INTEGER DEFAULT 0
         )""")
+        self.conn.commit()
 
+        # Represent the Friends relation as a table.
+        self.cur.execute("""CREATE TABLE Friends(
+            user1 INTEGER NOT NULL REFERENCES Users(id),
+            user2 INTEGER NOT NULL REFERENCES Users(id),
+            CONSTRAINT PK_FriendsWith PRIMARY KEY (user1, user2)
+        )""")
         self.conn.commit()
 
         # Add our admin user
@@ -67,22 +74,46 @@ class SQLDatabase():
                 VALUES('{}', '{}', {})
             """
 
-        if self.check_user_exists(username):
-            print("A user already exists. Try a different username.")
+        if self.has_user(username):
             return False
 
-        #unique_id = string.ascii_letters + string.digits
-        #id = ''.join((random.choice(unique_id) for i in range(7)))
-
-        hashed_pwd = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        salt = "mmm_salty_salt_is_salty"
+        hashed_pwd = hashlib.sha256((password+salt).encode('utf-8')).hexdigest()
         sql_query = sql_query.format(username, hashed_pwd, admin)
 
         self.cur.execute(sql_query)
         self.conn.commit()
         return True
 
+    def add_friendship(self, username1, username2):
+
+        user1 = self.get_id(username1)
+        user2 = self.get_id(username2)
+
+        if (user1 == -1 or user2 == -1):
+            return False
+
+        if (user1 == user2):
+            return False
+
+        sql_query = """
+                INSERT INTO Friends(user1, user2)
+                VALUES({}, {})
+            """
+
+        q1 = sql_query.format(user1, user2)
+        q2 = sql_query.format(user2, user1)
+
+        self.cur.execute(q1)
+        self.conn.commit()
+
+        self.cur.execute(q2)
+        self.conn.commit()
+
+        return True
+
     # Check whether a username exists.
-    def check_user_exists(self, username):
+    def has_user(self, username):
 
         sql_query = """
                 SELECT 1 
@@ -97,6 +128,22 @@ class SQLDatabase():
         if self.cur.fetchone():
             return True
         return False
+
+    def get_id(self, username):
+
+        sql_query = """
+                SELECT id
+                FROM Users
+                WHERE username = '{username}'
+            """
+
+        sql_query = sql_query.format(username=username)
+        self.cur.execute(sql_query)
+
+        userdata = self.cur.fetchone()
+        if userdata:
+            return userdata[0]
+        return -1        
 
     # Check login credentials
     def check_credentials(self, username, password):
