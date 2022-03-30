@@ -16,7 +16,7 @@ class SQLDatabase():
     '''
 
     # Get the database running
-    def __init__(self, database_arg="Users.db"):
+    def __init__(self, database_arg="website.db"):
         self.conn = sqlite3.connect(database_arg)
         self.cur = self.conn.cursor()
 
@@ -48,9 +48,9 @@ class SQLDatabase():
 
         # Create the users table
         self.cur.execute("""CREATE TABLE Users(
-            Id INT,
-            username TEXT,
-            password TEXT,
+            id INTEGER PRIMARY KEY,
+            username VARCHAR(16),
+            password CHAR(64),
             admin INTEGER DEFAULT 0
         )""")
 
@@ -59,36 +59,48 @@ class SQLDatabase():
         # Add our admin user
         self.add_user('admin', admin_password, admin=1)
 
-    #-----------------------------------------------------------------------------
-    # User handling
-    #-----------------------------------------------------------------------------
-
     # Add a user to the database
     def add_user(self, username, password, admin=0):
-        sql_cmd = """
-                INSERT INTO Users
-                VALUES({id}, '{username}', '{password}', {admin})
+
+        sql_query = """
+                INSERT INTO Users(username, password, admin)
+                VALUES('{}', '{}', {})
             """
 
-        if self.check_credentials(username, password):
+        if self.check_user_exists(username):
             print("A user already exists. Try a different username.")
             return False
 
-        unique_id = string.ascii_letters + string.digits
-        id = ''.join((random.choice(unique_id) for i in range(7)))
+        #unique_id = string.ascii_letters + string.digits
+        #id = ''.join((random.choice(unique_id) for i in range(7)))
 
         hashed_pwd = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        sql_query = sql_query.format(username, hashed_pwd, admin)
 
-        sql_cmd = sql_cmd.format(id, username=username, password=hashed_pwd, admin=admin)
-
-        self.cur.execute(sql_cmd)
+        self.cur.execute(sql_query)
         self.conn.commit()
         return True
 
-    #-----------------------------------------------------------------------------
+    # Check whether a username exists.
+    def check_user_exists(self, username):
+
+        sql_query = """
+                SELECT 1 
+                FROM Users
+                WHERE username = '{username}'
+            """
+
+        sql_query = sql_query.format(username=username)
+        self.cur.execute(sql_query)
+
+        # If our query returns
+        if self.cur.fetchone():
+            return True
+        return False
 
     # Check login credentials
     def check_credentials(self, username, password):
+
         sql_query = """
                 SELECT 1 
                 FROM Users
@@ -102,12 +114,11 @@ class SQLDatabase():
 
         # If our query returns
         if self.cur.fetchone():
-            print("Login Successful. Welcome {}!".format(username))
-            self.conn.close()
             return True
         else:
-            print("Sorry, please try again.")
             return False
 
-    
+    def close(self):
+        self.conn.close()  
+
     #def show_friendlist(self, )

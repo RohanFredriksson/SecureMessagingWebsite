@@ -5,7 +5,6 @@
     It should exist as a separate layer to any database or data structure that you might be using
     Nothing here should be stateful, if it's stateful let the database handle it
 '''
-from numpy import True_
 import view
 import random
 
@@ -54,7 +53,7 @@ def login_check(session, username, password):
     # For now we hardcode the login
     if (username == 'admin' and password == 'password'):
         login = True
-        session['logged_in'] = True_
+        session['logged_in'] = True
         
     if login: 
         return page_view("valid", name=username)
