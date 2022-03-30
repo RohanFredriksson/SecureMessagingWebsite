@@ -168,6 +168,20 @@ def get_about():
 
     return page_view("about", garble=about_garble())
 
+@route('/chat')
+def get_chat():
+    '''
+        get_chat
+        
+        Serves the chat page
+    '''
+
+    session = request.environ.get('beaker.session')
+    if 'logged_in' in session:
+        if session['logged_in'] == True:
+            return page_view("chat")
+    return redirect('/login')
+
 # 404 errors, use the same trick for other types of errors
 @error(404)
 def error(error): 

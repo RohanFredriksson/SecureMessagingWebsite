@@ -40,7 +40,7 @@ import routes
 
 # It might be a good idea to move the following settings to a config file and then load them
 # Change this to your IP address or 0.0.0.0 when actually hosting
-host = '0.0.0.0'
+host = '127.0.0.1'
 
 # Test port, change to the appropriate port to host
 port = 8081
