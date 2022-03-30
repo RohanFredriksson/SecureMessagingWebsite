@@ -33,9 +33,8 @@ session = bottle.request.environ.get('beaker.session')
 
 # For the template, we will keep them together
 
-import model
 import view
-import controller
+import routes
 
 #-----------------------------------------------------------------------------
 

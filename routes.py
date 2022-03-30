@@ -5,7 +5,12 @@
 '''
 
 from bottle import route, get, post, error, request, redirect, static_file
-import model
+#import model
+import sql
+import view
+import random
+# Initialise our views, all arguments are defaults for the template
+page_view = view.View()
 
 #-----------------------------------------------------------------------------
 # Static file paths
@@ -70,13 +75,13 @@ def get_index():
         
         Serves the index page
     '''
-    return model.index()
+    return page_view("index")
 
 #-----------------------------------------------------------------------------
 
 # Display the login page
 @get('/login')
-def get_login_controller():
+def get_login():
     '''
         get_login
         
@@ -89,7 +94,7 @@ def get_login_controller():
         if session['logged_in'] == True:
             redirect('/about')
 
-    return model.login_form()
+    return page_view("login")
 
 #-----------------------------------------------------------------------------
 
@@ -110,8 +115,16 @@ def post_login():
     # Get the session.
     session = request.environ.get('beaker.session')
 
-    # Call the appropriate method
-    return model.login_check(session, username, password)
+    db = sql.SQLDatabase()
+    if (db.check_credentials(username, password)):
+        session['id'] = db.get_id(username)
+        session['username'] = username
+        session['logged_in'] = True
+        db.close()
+        return page_view("valid", name=username)
+
+    db.close()
+    return page_view("invalid", reason="invalid")
 
 #-----------------------------------------------------------------------------
 
@@ -122,17 +135,25 @@ def get_about():
         
         Serves the about page
     '''
-    return model.about()
-#-----------------------------------------------------------------------------
+    # Returns a random string each time
+    def about_garble():
+        '''
+            about_garble
+            Returns one of several strings for the about page
+        '''
+        garble = ["leverage agile frameworks to provide a robust synopsis for high level overviews.", 
+        "iterate approaches to corporate strategy and foster collaborative thinking to further the overall value proposition.",
+        "organically grow the holistic world view of disruptive innovation via workplace change management and empowerment.",
+        "bring to the table win-win survival strategies to ensure proactive and progressive competitive domination.",
+        "ensure the end of the day advancement, a new normal that has evolved from epistemic management approaches and is on the runway towards a streamlined cloud solution.",
+        "provide user generated content in real-time will have multiple touchpoints for offshoring."]
+        return garble[random.randint(0, len(garble) - 1)]
 
-# Help with debugging
-@post('/debug/<cmd:path>')
-def post_debug(cmd):
-    return model.debug(cmd)
-
-#-----------------------------------------------------------------------------
+    return page_view("about", garble=about_garble())
 
 # 404 errors, use the same trick for other types of errors
 @error(404)
 def error(error): 
-    return model.handle_errors(error)
+    error_type = error.status_line
+    error_msg = error.body
+    return page_view("error", error_type=error_type, error_msg=error_msg)

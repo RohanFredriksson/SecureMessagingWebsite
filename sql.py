@@ -16,6 +16,7 @@ class SQLDatabase():
     def __init__(self, database_arg="website.db"):
         self.conn = sqlite3.connect(database_arg)
         self.cur = self.conn.cursor()
+        self.salt = "mmm_salty_salt_is_salty"
 
     # SQLite 3 does not natively support multiple commands in a single statement
     # Using this handler restores this functionality
@@ -77,8 +78,7 @@ class SQLDatabase():
         if self.has_user(username):
             return False
 
-        salt = "mmm_salty_salt_is_salty"
-        hashed_pwd = hashlib.sha256((password+salt).encode('utf-8')).hexdigest()
+        hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
         sql_query = sql_query.format(username, hashed_pwd, admin)
 
         self.cur.execute(sql_query)
@@ -154,7 +154,7 @@ class SQLDatabase():
                 WHERE username = '{username}' AND password = '{password}'
             """
         
-        pwd = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
 
         sql_query = sql_query.format(username=username, password=pwd)
         self.cur.execute(sql_query)
