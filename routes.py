@@ -128,6 +128,47 @@ def post_login():
 
 #-----------------------------------------------------------------------------
 
+# Display the registration page
+@get('/register')
+def get_register():
+    '''
+        get_login
+        
+        Serves the registration page
+    '''
+
+    return page_view("register")
+
+
+# Attempt the registration
+@post('/register')
+def post_register():
+    '''
+        post_register
+        
+        Handles registration attempts
+        Expects a form containing 'username' and 'password' fields
+    '''
+
+    # Handle the form processing
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    
+    # Get the session.
+    session = request.environ.get('beaker.session')
+
+    db = sql.SQLDatabase()
+    if (db.has_user(username)):
+        return page_view("invalid", reason="Try a different username")
+    db.add_user(username, password, 0)
+    session['id'] = db.get_id(username)
+    session['username'] = username
+    session['logged_in'] = True
+    db.close()
+    return page_view("valid", name=username)
+
+#-----------------------------------------------------------------------------
+
 @get('/logout')
 def get_logout():
     '''
@@ -142,7 +183,7 @@ def get_logout():
     if 'logged_in' in session:
         if session['logged_in'] == True:
             session.delete()
-            redirect('/')
+            return page_view("/logout")
     return page_view("invalid", reason="not logged in")
 
 @get('/about')
