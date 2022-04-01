@@ -33,7 +33,7 @@
         const secret = await window.crypto.subtle.importKey("jwk", secretWebKey, {name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]);
     
         // Compute the data encryption.
-        const vector = "Initialisation Vector String"
+        const vector = window.crypto.getRandomValues(new Uint8Array(12))
         const encodedText = new TextEncoder().encode(text);
         const encryptedData = await window.crypto.subtle.encrypt({name: "AES-GCM", iv: new TextEncoder().encode(vector)}, secret, encodedText);
         let buffer = new Uint8Array(encryptedData);
@@ -127,7 +127,8 @@
         bobSecret = await generateSecret(alice.public, bob.private);
         mallorySecret = await generateSecret(alice.public, mallory.private);
 
-        cipher = await encrypt("Hello there", aliceSecret);
+        cipher = await encrypt("According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. The bee, of course, flies anyway because bees don't care what humans think is impossible.", aliceSecret);
+
         data = await decrypt(cipher, bobSecret);
         console.log(data);
 

@@ -52,6 +52,7 @@ class SQLDatabase():
             id INTEGER PRIMARY KEY,
             username VARCHAR(16),
             password CHAR(64),
+            public CHAR(150),
             admin INTEGER DEFAULT 0
         )""")
         self.conn.commit()
@@ -60,7 +61,18 @@ class SQLDatabase():
         self.cur.execute("""CREATE TABLE Friends(
             user1 INTEGER NOT NULL REFERENCES Users(id),
             user2 INTEGER NOT NULL REFERENCES Users(id),
-            CONSTRAINT PK_FriendsWith PRIMARY KEY (user1, user2)
+            CONSTRAINT PK_Friends PRIMARY KEY (user1, user2)
+        )""")
+        self.conn.commit()
+
+        # Create a messages table.
+        self.cur.execute("""CREATE TABLE Messages(
+            from INTEGER NOT NULL REFERENCES Users(id),
+            to INTEGER NOT NULL REFERENCES Users(id),
+            message TEXT,
+            mac CHAR(44),
+            vector CHAR(12),
+            CONSTRAINT PK_Messages PRIMARY KEY (user1, user2)
         )""")
         self.conn.commit()
 
