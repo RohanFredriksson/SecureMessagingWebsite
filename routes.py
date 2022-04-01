@@ -75,6 +75,12 @@ def get_index():
         
         Serves the index page
     '''
+    # Get the session
+    session = request.environ.get('beaker.session')
+    if 'logged_in' in session:
+        if session['logged_in'] == True:
+            return page_view("index", header="user_header")
+
     return page_view("index")
 
 #-----------------------------------------------------------------------------
@@ -88,7 +94,7 @@ def get_login():
         Serves the login page
     '''
 
-    # Get the session
+    # Use the user header if logged in.
     session = request.environ.get('beaker.session')
     if 'logged_in' in session:
         if session['logged_in'] == True:
@@ -159,13 +165,14 @@ def post_register():
 
     db = sql.SQLDatabase()
     if (db.has_user(username)):
-        return page_view("invalid", reason="Try a different username")
+        db.close()
+        return page_view("register", notification="Try a different username")
     db.add_user(username, password, 0)
     session['id'] = db.get_id(username)
     session['username'] = username
     session['logged_in'] = True
     db.close()
-    return page_view("valid", name=username)
+    redirect('/')
 
 #-----------------------------------------------------------------------------
 
@@ -206,6 +213,12 @@ def get_about():
         "ensure the end of the day advancement, a new normal that has evolved from epistemic management approaches and is on the runway towards a streamlined cloud solution.",
         "provide user generated content in real-time will have multiple touchpoints for offshoring."]
         return garble[random.randint(0, len(garble) - 1)]
+
+    # Use the user header if logged in.
+    session = request.environ.get('beaker.session')
+    if 'logged_in' in session:
+        if session['logged_in'] == True:
+            return page_view("about", header="user_header", garble=about_garble())
 
     return page_view("about", garble=about_garble())
 

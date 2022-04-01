@@ -1,0 +1,39 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+  <title>Simple Student Templating Solutions</title>
+</head>
+
+<div id="notification_box" class="notification_box content">
+  <p id="notification_text">Hello There</p>
+</div>
+
+<p>
+  <ul>
+    <li><a class="active" href="/home">Home</a></li>
+    <li><a href="/login">Login</a></li>
+    <li><a href="/about">About</a></li>
+  </ul>
+</p>
+
+<script src="js/header.js"></script>
+<script>
+
+  // Check if the notification exists.
+  displayNotification = false;
+  notification = "${notification}";
+  if (notification.length > 0) {
+    if (notification.length > 3) {
+      if (notification[0] != '$' || notification[1] != '{' || notification[notification.length-1] != '}') {
+        displayNotification = true;
+      }
+    } else {
+      displayNotification = true;
+    }
+  }
+
+  // Display if exists.
+  if (displayNotification) {
+    notificationDisplay(notification);
+  }
+
+</script>
