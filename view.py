@@ -4,6 +4,7 @@
 #-----------------------------------------------------------------------------
 
 import string
+import session
 
 class View():
     '''
@@ -28,6 +29,10 @@ class View():
         '''
             Call defaults to load and render
         '''
+        if session.has_notification():
+            message = session.get_notification()
+            session.clear_notification()
+            return self.load_and_render(*args, notification=message, **kwargs)
         return self.load_and_render(*args, **kwargs)
 
 

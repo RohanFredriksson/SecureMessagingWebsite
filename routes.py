@@ -5,7 +5,7 @@
 '''
 
 from bottle import route, get, post, error, request, redirect, static_file
-#import model
+import session
 import sql
 import view
 import random
@@ -76,10 +76,8 @@ def get_index():
         Serves the index page
     '''
     # Get the session
-    session = request.environ.get('beaker.session')
-    if 'logged_in' in session:
-        if session['logged_in'] == True:
-            return page_view("index", header="user_header")
+    if session.is_logged_in():
+        return page_view("index", header="user_header")
 
     return page_view("index")
 
@@ -95,10 +93,8 @@ def get_login():
     '''
 
     # Use the user header if logged in.
-    session = request.environ.get('beaker.session')
-    if 'logged_in' in session:
-        if session['logged_in'] == True:
-            redirect('/about')
+    if session.is_logged_in():
+        redirect('/about')
 
     return page_view("login")
 
@@ -117,15 +113,10 @@ def post_login():
     # Handle the form processing
     username = request.forms.get('username')
     password = request.forms.get('password')
-    
-    # Get the session.
-    session = request.environ.get('beaker.session')
 
     db = sql.SQLDatabase()
     if (db.check_credentials(username, password)):
-        session['id'] = db.get_id(username)
-        session['username'] = username
-        session['logged_in'] = True
+        session.login(id, username)
         db.close()
         return page_view("valid", name=username)
 
@@ -159,19 +150,16 @@ def post_register():
     # Handle the form processing
     username = request.forms.get('username')
     password = request.forms.get('password')
-    
-    # Get the session.
-    session = request.environ.get('beaker.session')
 
     db = sql.SQLDatabase()
     if (db.has_user(username)):
         db.close()
-        return page_view("register", notification="Try a different username")
+        session.send_notification("Try a different username")
+        return page_view("register")
     db.add_user(username, password, 0)
-    session['id'] = db.get_id(username)
-    session['username'] = username
-    session['logged_in'] = True
     db.close()
+    session.login(id, username)
+    session.send_notification("Welcome " + username + "!")
     redirect('/')
 
 #-----------------------------------------------------------------------------
@@ -183,15 +171,10 @@ def get_logout():
         
         Handles logout attempts
     '''
+    session.logout()
+    session.send_notification("Successfully logged out!")
+    return page_view("/logout")
 
-    # Get the session.
-    session = request.environ.get('beaker.session')
-
-    if 'logged_in' in session:
-        if session['logged_in'] == True:
-            session.delete()
-            return page_view("/logout")
-    return page_view("invalid", reason="not logged in")
 
 @get('/about')
 def get_about():
@@ -214,11 +197,8 @@ def get_about():
         "provide user generated content in real-time will have multiple touchpoints for offshoring."]
         return garble[random.randint(0, len(garble) - 1)]
 
-    # Use the user header if logged in.
-    session = request.environ.get('beaker.session')
-    if 'logged_in' in session:
-        if session['logged_in'] == True:
-            return page_view("about", header="user_header", garble=about_garble())
+    if session.is_logged_in():
+        return page_view("about", header="user_header", garble=about_garble())
 
     return page_view("about", garble=about_garble())
 
@@ -230,10 +210,8 @@ def get_chat():
         Serves the chat page
     '''
 
-    session = request.environ.get('beaker.session')
-    if 'logged_in' in session:
-        if session['logged_in'] == True:
-            return page_view("chat")
+    if session.is_logged_in():
+        return page_view("chat")
     return redirect('/login')
 
 # 404 errors, use the same trick for other types of errors
