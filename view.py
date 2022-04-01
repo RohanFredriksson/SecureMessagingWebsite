@@ -45,6 +45,10 @@ class View():
             :: tailer :: Tailer template to use
             :: kwargs :: Keyword arguments to pass
         '''
+
+        if session.is_logged_in():
+            header = "user_header"
+
         body_template = self.load_template(filename)
         header_template = self.load_template(header)
         tailer_template = self.load_template(tailer)

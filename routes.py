@@ -75,10 +75,6 @@ def get_index():
         
         Serves the index page
     '''
-    # Get the session
-    if session.is_logged_in():
-        return page_view("index", header="user_header")
-
     return page_view("index")
 
 #-----------------------------------------------------------------------------
@@ -94,7 +90,7 @@ def get_login():
 
     # Use the user header if logged in.
     if session.is_logged_in():
-        redirect('/about')
+        redirect('/')
 
     return page_view("login")
 
@@ -118,10 +114,12 @@ def post_login():
     if (db.check_credentials(username, password)):
         session.login(id, username)
         db.close()
-        return page_view("valid", name=username)
+        session.send_notification("Welcome " + username + "!")
+        redirect('/')
 
     db.close()
-    return page_view("invalid", reason="invalid")
+    session.send_notification("Username or password is incorrect.")
+    return page_view("login")
 
 #-----------------------------------------------------------------------------
 
@@ -154,8 +152,19 @@ def post_register():
     db = sql.SQLDatabase()
     if (db.has_user(username)):
         db.close()
-        session.send_notification("Try a different username")
+        session.send_notification("Username already taken. Please enter a different username")
         return page_view("register")
+
+    if len(username) < 4:
+        db.close()
+        session.send_notification("Username too short. Please enter a different username")
+        return page_view("register")
+
+    if len(password) < 8:
+        db.close()
+        session.send_notification("Password too short. Please enter a different password")
+        return page_view("register")
+    
     db.add_user(username, password, 0)
     db.close()
     session.login(id, username)
@@ -196,10 +205,7 @@ def get_about():
         "ensure the end of the day advancement, a new normal that has evolved from epistemic management approaches and is on the runway towards a streamlined cloud solution.",
         "provide user generated content in real-time will have multiple touchpoints for offshoring."]
         return garble[random.randint(0, len(garble) - 1)]
-
-    if session.is_logged_in():
-        return page_view("about", header="user_header", garble=about_garble())
-
+        
     return page_view("about", garble=about_garble())
 
 @route('/chat')
