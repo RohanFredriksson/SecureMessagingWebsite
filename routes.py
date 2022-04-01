@@ -182,7 +182,7 @@ def get_logout():
     '''
     session.logout()
     session.send_notification("Successfully logged out!")
-    return page_view("/logout")
+    redirect("/")
 
 
 @get('/about')
@@ -205,7 +205,7 @@ def get_about():
         "ensure the end of the day advancement, a new normal that has evolved from epistemic management approaches and is on the runway towards a streamlined cloud solution.",
         "provide user generated content in real-time will have multiple touchpoints for offshoring."]
         return garble[random.randint(0, len(garble) - 1)]
-        
+
     return page_view("about", garble=about_garble())
 
 @route('/chat')
