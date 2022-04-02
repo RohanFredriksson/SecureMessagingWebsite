@@ -15,6 +15,8 @@ def login(id, username):
 
 def logout():
     current_session = request.environ.get('beaker.session')
+    current_session['id'] = None
+    current_session['username'] = None
     current_session['logged_in'] = False
 
 def has_notification():
@@ -38,3 +40,7 @@ def clear_notification():
 def send_notification(message: str):
     current_session = request.environ.get('beaker.session')
     current_session['notification'] = message
+
+def get_username():
+    current_session = request.environ.get('beaker.session')
+    return current_session['username']

@@ -237,6 +237,18 @@ def get_chat():
         return page_view("chat")
     return redirect('/login')
 
+@route('/profile')
+def get_chat():
+    '''
+        get_chat
+        
+        Serves the chat page
+    '''
+
+    if session.is_logged_in():
+        return page_view("profile")
+    return redirect('/login')
+
 @post('/validate_register')
 def validate_register():
 
@@ -268,6 +280,13 @@ def validate_register():
         return dumps(rv)
 
     rv = {"status": True}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@get('/get_username')
+def get_username():
+
+    rv = {'username': session.get_username()}    
     response.content_type = 'application/json'
     return dumps(rv)
 

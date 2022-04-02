@@ -69,9 +69,9 @@ def reset_db():
     '''
     db = sql.SQLDatabase()
     db.database_setup()
-    db.add_user('rohan', 'solidpassword', '')
-    db.add_user('albert', 'greatpassword', '')
-    db.add_user('garry', 'unbreakable', '')
+    db.add_user('rohan', 'solidpassword')
+    db.add_user('albert', 'greatpassword')
+    db.add_user('garry', 'unbreakable')
     db.add_friendship('rohan', 'albert')
     return
 

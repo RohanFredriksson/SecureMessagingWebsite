@@ -80,3 +80,21 @@ label {
     box-shadow:0 0 1vh rgba(0,0,0,.25);
     text-align:center;
 }
+
+.spoiler {
+    background-color:#333;
+    color: transparent;
+    user-select: none;
+}
+  
+.spoiler:hover {
+    background-color: inherit;
+    color: inherit;
+    user-select: text;
+}
+
+.key_box {
+    background-color: rgb(148, 148, 148);
+    border-radius: 5px;
+    border: 3px solid #111;
+}

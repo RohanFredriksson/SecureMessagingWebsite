@@ -80,10 +80,10 @@ class SQLDatabase():
         self.conn.commit()
 
         # Add our admin user
-        self.add_user('admin', admin_password, '', admin=1)
+        self.add_user('admin', admin_password, None, admin=1)
 
     # Add a user to the database
-    def add_user(self, username, password, public, admin=0):
+    def add_user(self, username, password, public=None, admin=0):
 
         sql_query = """
                 INSERT INTO Users(username, password, public, admin)
