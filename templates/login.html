@@ -1,10 +1,14 @@
-<p>Login with a username and password</p>
-<form action="/login" method="post">
-    Username: <input name="username" type="text" />
-</br>
-    Password: <input name="password" type="password" />
-</br>
-    <input value="Login" type="submit" />
-</form>
-<a href="/register">Sign up</a>
-
+<center>
+<div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+  <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
+    <p style="margin:0;">Log in to continue:</p>
+    <form action="/login" method="post">
+      <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
+      <label><center><input style="height: 40px; width:250px;" name="password" type="password" placeholder="Enter password" required/></center></label>
+      <label><center><input style="height: 40px; width:250px;" value="Continue" type="submit"/></center></label>
+    </form>
+    <p style="margin:0; font-size: small; padding-bottom: 6px;">OR</p>
+    <a href="/register" style="text-decoration: none;">Sign up for an account</a>
+  </div>
+</div>
+</center>

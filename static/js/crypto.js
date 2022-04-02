@@ -58,7 +58,7 @@ async function encrypt(text, secretWebKey) {
 }
 
 /*
- - Uses a shared master secret to symmetrically decrypy the cipher.
+ - Uses a shared master secret to symmetrically decrypt the cipher.
  - Verifies the HMAC, and if it is verified, then the message is decrypted.
  - Returns a verification status, and a message if verified.
 */
