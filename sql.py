@@ -47,6 +47,9 @@ class SQLDatabase():
         self.conn.execute("DROP TABLE IF EXISTS Friends")
         self.conn.commit()
 
+        self.conn.execute("DROP TABLE IF EXISTS Messages")
+        self.conn.commit()
+
         # Create the users table
         self.cur.execute("""CREATE TABLE Users(
             id INTEGER PRIMARY KEY,
@@ -67,12 +70,12 @@ class SQLDatabase():
 
         # Create a messages table.
         self.cur.execute("""CREATE TABLE Messages(
-            from INTEGER NOT NULL REFERENCES Users(id),
-            to INTEGER NOT NULL REFERENCES Users(id),
+            sender INTEGER NOT NULL REFERENCES Users(id),
+            recipient INTEGER NOT NULL REFERENCES Users(id),
             message TEXT,
             mac CHAR(44),
             vector CHAR(12),
-            CONSTRAINT PK_Messages PRIMARY KEY (user1, user2)
+            CONSTRAINT PK_Messages PRIMARY KEY (sender, recipient)
         )""")
         self.conn.commit()
 
