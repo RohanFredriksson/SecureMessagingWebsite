@@ -1,13 +1,71 @@
 <center>
-  <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+  <div class="content" style="width: 400px; height: 350px; margin-top: 100px;">
     <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
       <p style="margin:0;">You're almost there.</p>
       <p style="margin:0;">Please fill in to register:</p>
-      <form action="/register" method="post">
+      <form id="register" action="/register" method="post">
         <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
         <label><center><input style="height: 40px; width:250px;" name="password" type="password" placeholder="Enter password" required/></center></label>
+        <label><center><input style="height: 40px; width:250px;" name="confirmation" type="password" placeholder="Confirm password" required/></center></label>
+        <input style="display: none;" name="public" type="text">
         <label><center><input style="height: 40px; width:250px;" value="Register" type="submit"/></center></label>
       </form>
     </div>
   </div>
 </center>
+
+<script src="js/crypto.js"></script>
+<script>
+  form = document.getElementById('register');
+  form.addEventListener('submit', (e) => {
+
+    // Prevent the form from performing the POST.
+    // It will be done manually.
+    e.preventDefault();
+
+    username = form.elements['username'].value;
+    password = form.elements['password'].value;
+    confirmation = form.elements['confirmation'].value;
+
+    if (password != confirmation) {
+      notificationDisplay("Passwords do not match.");
+    }
+
+    async function register(username, password) {
+      
+      // Generate a new key pair for the user.
+      keyPair = await generateKeyPair();
+      public = JSON.stringify(keyPair.public);
+      private = JSON.stringify(keyPair.private);
+
+      // Need to validate the details before storing locally, in case we overwrite previous details.
+      data = new URLSearchParams();
+      data.append("username", username);
+      data.append("password", password);
+
+      fetch("/validate_register", {
+        method: "POST",
+        body: data,
+      })
+      .then((res) => {
+        if (res.ok) {return res.json();}
+        else {throw new Error("FETCH FAILED.")}
+      })
+      .then((json) => {
+
+        if (json.status) {
+          // Store the public and private keys locally.
+          localStorage.setItem(username + "_public", public);
+          localStorage.setItem(username + "_private", private);
+        }
+
+        // Finally submit the form.
+        form.elements['public'].value = public;
+        form.submit();
+
+      });
+    }
+    register(username, password);
+
+  });
+</script>

@@ -80,21 +80,21 @@ class SQLDatabase():
         self.conn.commit()
 
         # Add our admin user
-        self.add_user('admin', admin_password, admin=1)
+        self.add_user('admin', admin_password, '', admin=1)
 
     # Add a user to the database
-    def add_user(self, username, password, admin=0):
+    def add_user(self, username, password, public, admin=0):
 
         sql_query = """
-                INSERT INTO Users(username, password, admin)
-                VALUES('{}', '{}', {})
+                INSERT INTO Users(username, password, public, admin)
+                VALUES('{}', '{}', '{}', {})
             """
 
         if self.has_user(username):
             return False
 
         hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
-        sql_query = sql_query.format(username, hashed_pwd, admin)
+        sql_query = sql_query.format(username, hashed_pwd, public, admin)
 
         self.cur.execute(sql_query)
         self.conn.commit()

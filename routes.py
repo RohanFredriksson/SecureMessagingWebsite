@@ -4,7 +4,9 @@
     maybe some simple program logic
 '''
 
-from bottle import route, get, post, error, request, redirect, static_file
+from bottle import route, get, post, error, request, response, redirect, static_file
+from json import dumps
+import util
 import session
 import sql
 import view
@@ -148,24 +150,39 @@ def post_register():
     # Handle the form processing
     username = request.forms.get('username')
     password = request.forms.get('password')
+    public_key = request.forms.get('public')
+
+    if username == None or password == None or public_key == None:
+        session.send_notification("Missing required information.")
+        return page_view("register")
 
     db = sql.SQLDatabase()
     if (db.has_user(username)):
         db.close()
-        session.send_notification("Username already taken. Please enter a different username")
+        session.send_notification("Username already taken. Please enter a different username.")
         return page_view("register")
 
     if len(username) < 4:
         db.close()
-        session.send_notification("Username too short. Please enter a different username")
+        session.send_notification("Username too short. Please enter a different username.")
+        return page_view("register")
+
+    if not util.validate_username(username):
+        db.close()
+        session.send_notification("Username must be alphanumeric. Please enter a different username.")
         return page_view("register")
 
     if len(password) < 8:
         db.close()
-        session.send_notification("Password too short. Please enter a different password")
+        session.send_notification("Password too short. Please enter a different password.")
+        return page_view("register")
+
+    if not util.validate_password(password):
+        db.close()
+        session.send_notification("Invalid password characters. (A-Z,a-z,0-9,@#$%^&+=) Please enter a different password.")
         return page_view("register")
     
-    db.add_user(username, password, 0)
+    db.add_user(username, password, public_key, 0)
     db.close()
     session.login(id, username)
     session.send_notification("Welcome " + username + "!")
@@ -219,6 +236,40 @@ def get_chat():
     if session.is_logged_in():
         return page_view("chat")
     return redirect('/login')
+
+@post('/validate_register')
+def validate_register():
+
+    # Handle the form processing
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+
+    if username == None or password == None:
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db = sql.SQLDatabase()
+    if (db.has_user(username)):
+        db.close()
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+    db.close()
+
+    if not util.validate_username(username):
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    if not util.validate_password(password):
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    rv = {"status": True}
+    response.content_type = 'application/json'
+    return dumps(rv)
 
 # 404 errors, use the same trick for other types of errors
 @error(404)
