@@ -4,30 +4,6 @@
     font-family: 'Open Sans', sans-serif;
 }
 
-ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #333;
-}
-
-li {
-    float: left;
-}
-
-li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
-li a:hover {
-    background-color: #111;
-}
-
 html, body {
     height: 100%;
     margin: 0;
@@ -97,4 +73,28 @@ label {
     background-color: rgb(148, 148, 148);
     border-radius: 5px;
     border: 3px solid #111;
+}
+
+.bar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.bar li {
+    float: left;
+}
+
+.bar li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.bar li a:hover {
+    background-color: #111;
 }
