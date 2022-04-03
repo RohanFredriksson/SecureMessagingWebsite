@@ -1,13 +1,39 @@
 
-    <center>
-    <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
-        <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
-            <p style="margin:0;">Search a friend</p>
-            <form action="/friends" method="post">
-            <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
-            <label><center><input style="height: 40px; width:250px;" value="Add" type="submit"/></center></label>
-            </form>
-        </div>
+<center>
+  <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+    <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
+      <p style="margin:0;">Search a friend</p>
+      <form action="/friends" method="post">
+      <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
+      <label><center><input style="height: 40px; width:250px;" value="Add" type="submit"/></center></label>
+      </form>
     </div>
-    </center>
-    
+  </div>
+        
+  <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+    <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
+      <ul id="friends">
+      </ul>
+    </div>
+  </div>
+</center>
+
+<script>
+
+  friendsList = document.getElementById("friends");
+  friends = "${friends}";
+  friends = friends.replaceAll('\'','\"');
+  
+  exists = false;
+  try {
+    friends = JSON.parse(friends);
+    exists = true;
+  } catch {}
+
+  if (exists) {
+    friends.forEach(friend => {
+      friendsList.innerHTML += "<li>" + friend + "</li>";
+    });
+  }
+
+</script>
