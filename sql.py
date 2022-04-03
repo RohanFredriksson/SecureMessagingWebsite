@@ -169,7 +169,7 @@ class SQLDatabase():
         self.cur.execute(sql_query)
         ls = self.cur.fetchall()
         friends = []
-        for i in friends:
+        for i in ls:
             friends.append(i[0])
 
         return friends
