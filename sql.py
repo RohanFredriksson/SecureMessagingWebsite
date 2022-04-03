@@ -126,6 +126,31 @@ class SQLDatabase():
         self.conn.commit()
 
         return True
+    
+    def is_friends(self, username1, username2):
+
+        user1 = self.get_id(username1)
+        user2 = self.get_id(username2)
+
+        if (user1 == -1 or user2 == -1):
+            return False
+
+        if (user1 == user2):
+            return False
+
+        sql_query = """
+                SELECT 1 
+                FROM Friends
+                WHERE user1 = '{}' AND user2 = '{}'
+            """
+
+        sql_query = sql_query.format(user1, user2)
+        self.cur.execute(sql_query)
+
+        # If our query returns
+        if self.cur.fetchone():
+            return True
+        return False
 
     # Check whether a username exists.
     def has_user(self, username):
