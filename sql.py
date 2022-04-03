@@ -127,6 +127,28 @@ class SQLDatabase():
 
         return True
 
+    #Show a list of friends
+    def show_friendlist(self, username):
+
+        user1 = self.get_id(username)
+
+        sql_query = """
+                SELECT Users.username
+                FROM Friends
+                INNER JOIN Users ON Friends.user2=Users.id 
+                AND user1={}
+            """
+
+        sql_query = sql_query.format(user1)
+
+        self.cur.execute(sql_query)
+        ls = self.cur.fetchall()
+        friends = []
+        for i in friends:
+            friends.append(i[0])
+
+        return friends
+
     # Check whether a username exists.
     def has_user(self, username):
 
@@ -182,5 +204,3 @@ class SQLDatabase():
 
     def close(self):
         self.conn.close()  
-
-    #def show_friendlist(self, )
