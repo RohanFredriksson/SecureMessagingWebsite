@@ -190,6 +190,65 @@ def post_register():
 
 #-----------------------------------------------------------------------------
 
+@get('/friends')
+def get_friends():
+    '''
+        show_friends
+        
+        Serves the friends page
+    '''
+
+    # Change 'friends' html
+    db = sql.SQLDatabase()
+    friendlist = db.show_friendlist(session.get_username())
+    if len(friendlist) > 0:
+        string = """
+        <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+        <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%"><ul>\n"""
+        string += "\n".join(["<li>" + str(i) + "</li>" for i in friendlist])
+        string += "\n</div>\n</div>\n</ul>\n</center>"
+    
+        f = open("templates/friends.html", "w")
+        f.write("""
+        <center>
+        <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+            <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
+                <p style="margin:0;">Search a friend</p>
+                <form action="/friends" method="post">
+                <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
+                <label><center><input style="height: 40px; width:250px;" value="Add" type="submit"/></center></label>
+                </form>
+            </div>
+        </div>
+        
+        """ + string)
+        f.close()
+
+    return page_view("friends")
+
+@post('/friends')
+def post_friends():
+    
+    # Change 'firends' html 
+
+
+    # Handle the form processing
+    username = request.forms.get('username')
+
+    db = sql.SQLDatabase()
+    if db.has_user(username) and db.is_friends(session.get_username(), username) == False:
+        #print(session.get_username())
+        db.add_friendship(session.get_username(), username)
+        session.send_notification("User added to your friendlist!")
+        print(db.show_friendlist(get_username))
+        db.close()
+        
+        return redirect("friends")
+    db.close()
+    session.send_notification("User already a friend or user does not exist")
+    return page_view("friends")
+
+
 @get('/logout')
 def get_logout():
     '''
@@ -197,6 +256,21 @@ def get_logout():
         
         Handles logout attempts
     '''
+    f = open("templates/friends.html", "w")
+    f.write("""
+    <center>
+    <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+        <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
+            <p style="margin:0;">Search a friend</p>
+            <form action="/friends" method="post">
+            <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
+            <label><center><input style="height: 40px; width:250px;" value="Add" type="submit"/></center></label>
+            </form>
+        </div>
+    </div>
+    </center>
+    """)
+    f.close()
     session.logout()
     session.send_notification("Successfully logged out!")
     redirect("/")
