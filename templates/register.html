@@ -27,10 +27,6 @@
     password = form.elements['password'].value;
     confirmation = form.elements['confirmation'].value;
 
-    if (password != confirmation) {
-      notificationDisplay("Passwords do not match.");
-    }
-
     async function register(username, password) {
       
       // Generate a new key pair for the user.
@@ -65,7 +61,14 @@
 
       });
     }
-    register(username, password);
+
+    if (password != confirmation) {
+      notificationDisplay("Passwords do not match.");
+    } 
+    
+    else {
+      register(username, password);
+    }
 
   });
 </script>
