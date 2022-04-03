@@ -245,7 +245,7 @@ class SQLDatabase():
             return False
 
         sql_query = """
-                INSERT INTO Message(sender, recipient, message, mac, vector)
+                INSERT INTO Messages(sender, recipient, message, mac, vector)
                 VALUES({}, {}, {}, {}, {})
             """
 
