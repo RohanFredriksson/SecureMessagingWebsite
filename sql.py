@@ -229,3 +229,29 @@ class SQLDatabase():
 
     def close(self):
         self.conn.close()  
+
+    def add_message(self, sender, recipient, message, mac, vector):
+
+        sender = self.get_id(sender)
+        recipient = self.get_id(recipient)
+
+        if (sender == -1 or recipient == -1):
+            return False
+
+        if (sender == recipient):
+            return False
+
+        if (self.is_friends(sender, recipient) == False):
+            return False
+
+        sql_query = """
+                INSERT INTO Message(sender, recipient, message, mac, vector)
+                VALUES({}, {}, {}, {}, {})
+            """
+
+        sql = sql_query.format(sender, recipient, message, mac, vector)
+
+        self.cur.execute(sql)
+        self.conn.commit()
+
+        return True
