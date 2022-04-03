@@ -312,12 +312,7 @@ def get_chat():
     return redirect('/login')
 
 @route('/profile')
-def get_chat():
-    '''
-        get_chat
-        
-        Serves the chat page
-    '''
+def get_profile():
 
     if session.is_logged_in():
         return page_view("profile")
