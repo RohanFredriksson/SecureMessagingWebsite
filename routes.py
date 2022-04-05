@@ -77,6 +77,13 @@ def get_index():
         
         Serves the index page
     '''
+
+    if session.is_logged_in():
+        # Change 'friends' html
+        db = sql.SQLDatabase()
+        friendlist = db.show_friendlist(session.get_username())
+        db.close()
+        return page_view("chat", friends=friendlist)
     return page_view("index")
 
 #-----------------------------------------------------------------------------
@@ -201,7 +208,7 @@ def get_friends():
     # Change 'friends' html
     db = sql.SQLDatabase()
     friendlist = db.show_friendlist(session.get_username())
-
+    db.close()
     return page_view("friends", friends=friendlist)
 
 @post('/friends')
@@ -231,7 +238,6 @@ def post_friends():
     db.close()
     redirect("friends")
 
-
 @get('/logout')
 def get_logout():
     '''
@@ -239,25 +245,9 @@ def get_logout():
         
         Handles logout attempts
     '''
-    f = open("templates/friends.html", "w")
-    f.write("""
-    <center>
-    <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
-        <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
-            <p style="margin:0;">Search a friend</p>
-            <form action="/friends" method="post">
-            <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
-            <label><center><input style="height: 40px; width:250px;" value="Add" type="submit"/></center></label>
-            </form>
-        </div>
-    </div>
-    </center>
-    """)
-    f.close()
     session.logout()
     session.send_notification("Successfully logged out!")
     redirect("/")
-
 
 @get('/about')
 def get_about():
@@ -282,19 +272,7 @@ def get_about():
 
     return page_view("about", garble=about_garble())
 
-@route('/chat')
-def get_chat():
-    '''
-        get_chat
-        
-        Serves the chat page
-    '''
-
-    if session.is_logged_in():
-        return page_view("chat")
-    return redirect('/login')
-
-@route('/profile')
+@get('/profile')
 def get_profile():
 
     if session.is_logged_in():
@@ -334,6 +312,33 @@ def validate_register():
     rv = {"status": True}
     response.content_type = 'application/json'
     return dumps(rv)
+
+@post('send_message')
+def send_message():
+
+    # Check if logged in
+    if not session.is_logged_in():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Handle the form processing
+    sender = session.get_username()
+    recipient = request.forms.get('to')
+    message = request.forms.get('message')
+    mac = request.forms.get('mac')
+    vector = request.forms.get('vector')
+
+    # Check if all required elements are there.
+    if recipient == None or message == None or mac == None or vector == None:
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Upload to database
+
+    # Return status true
+    
 
 @get('/get_username')
 def get_username():

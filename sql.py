@@ -75,6 +75,7 @@ class SQLDatabase():
             message TEXT,
             mac CHAR(44),
             vector CHAR(12),
+            timesent DATETIME,
             CONSTRAINT PK_Messages PRIMARY KEY (sender, recipient)
         )""")
         self.conn.commit()
@@ -245,8 +246,8 @@ class SQLDatabase():
             return False
 
         sql_query = """
-                INSERT INTO Messages(sender, recipient, message, mac, vector)
-                VALUES({}, {}, {}, {}, {})
+                INSERT INTO Messages(sender, recipient, message, mac, vector, timesent)
+                VALUES('{}', '{}', '{}', '{}', '{}', GETDATE())
             """
 
         sql = sql_query.format(sender, recipient, message, mac, vector)

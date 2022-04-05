@@ -1,1 +1,65 @@
 <script src="js/crypto.js"></script>
+
+<!-- Chat Window -->
+<div id="chat_window" style="padding:20px; width: calc(100% - 420px); height: calc(100% - 198px); float: right">
+  <div class="content" style="width:100%; height:100%">
+  </div>
+</div>
+
+<!-- Chat Bar -->
+<div id="chat_bar" style="padding:20px; padding-top: 0px; width: calc(100% - 420px); height: 60px; float: right">
+  <div class="content" style="width:100%; height:100%">
+
+    <form action="/not_implemented" method="post" style="padding-top: 10px">
+      <center><input style="height: 40px; width: calc(100% - 20px);;" name="username" type="text" placeholder="Aa" required/></center>
+    </form>
+
+  </div>
+</div>
+
+<!-- Left Column -->
+<div id="left_column" style="padding:20px; width:360px; height: calc(100% - 118px);">
+  <div class="content" style="width:100%; height:100%">
+
+    <form action="/not_implemented" method="post" style="padding-top: 10px">
+      <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
+    </form>
+
+    <!-- Friends List -->
+    <ul id="friends"></ul>
+
+  </div>
+</div>
+
+<script>
+
+  friendsList = document.getElementById("friends");
+  friends = "${friends}";
+  friends = friends.replaceAll('\'','\"');
+  
+  exists = false;
+  try {
+    friends = JSON.parse(friends);
+    exists = true;
+  } catch {}
+
+  if (exists) {
+    friends.forEach(friend => {
+      friendsList.innerHTML += "<li>" + friend + "</li>";
+    });
+  }
+
+  chattingTo = {
+    username: null,
+    id: null
+  };
+
+  chatWindow = document.getElementById('chat_window');
+  chatBar = document.getElementById('chat_bar');
+
+  setTimeout(() => {
+    chatWindow.style.display = 'none';
+    chatBar.style.display = 'none';
+  }, 3000);
+
+</script>

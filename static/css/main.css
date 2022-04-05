@@ -38,10 +38,10 @@ label {
 
 .notification_box {
     cursor: default;
-    margin-left: 5vh;
-    margin-top: 5vh;
-    width: 15.5vw; 
-    height: 7.25vw; 
+    margin-left: 20px;
+    margin-top: 70px;
+    width: 360px; 
+    height: 60px; 
     position: absolute;
     display: none; 
     justify-content: center; 
