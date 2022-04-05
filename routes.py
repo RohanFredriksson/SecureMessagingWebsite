@@ -335,15 +335,17 @@ def send_message():
         response.content_type = 'application/json'
         return dumps(rv)
 
-    # Cant message someone you are not friends with
+    # Upload to database
+    # checks if the recipient exists, is_friends, or recipient == sender
     db = sql.SQLDatabase()
-    if not db.is_friends(sender, recipient):
+    if db.add_message(sender, recipient, message, mac, vector):
+        db.close()
+        return True
+    else:
         db.close()
         rv = {"status": False}
         response.content_type = 'application/json'
         return dumps(rv)
-
-    # Upload to database
 
     # Return status true
 
@@ -360,7 +362,7 @@ def get_messages():
     sender = request.forms.get('from')
     recipient = session.get('username')
 
-    # If the sender is the return error
+    # If the sender is the recipient, return error
     if sender == recipient:
         rv = {"status": False}
         response.content_type = 'application/json'
