@@ -256,3 +256,34 @@ class SQLDatabase():
         self.conn.commit()
 
         return True
+
+    def get_messages(self, sender, recipient):
+
+        sender = self.get_id(sender)
+        recipient = self.get_id(recipient)
+
+        if (sender == -1 or recipient == -1):
+            return []
+
+        if (sender == recipient):
+            return []
+
+        if (self.is_friends(sender, recipient) == False):
+            return []
+
+        sql_query = """
+                SELECT message, mac, vector, timesent
+                FROM Messages
+                WHERE sender = '{}' AND recipient = '{}'
+            """
+
+        sql = sql_query.format(sender, recipient)
+
+        self.cur.execute(sql)
+        ls = self.cur.fetchall()
+
+        messages = []
+        for i in ls:
+            messages.append({"message": i[0], "mac": i[1], "vector": i[2], "time": i[3]})
+
+        return messages

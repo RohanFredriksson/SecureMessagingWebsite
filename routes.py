@@ -335,10 +335,52 @@ def send_message():
         response.content_type = 'application/json'
         return dumps(rv)
 
+    # Cant message someone you are not friends with
+    db = sql.SQLDatabase()
+    if not db.is_friends(sender, recipient):
+        db.close()
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
     # Upload to database
 
     # Return status true
-    
+
+@post('get_messages')
+def get_messages():
+
+    # Check if logged in
+    if not session.is_logged_in():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Handle the form processing
+    sender = request.forms.get('from')
+    recipient = session.get('username')
+
+    # If the sender is the return error
+    if sender == recipient:
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # If the users are not friends, return error.
+    # This also checks if users exists.
+    db = sql.SQLDatabase()
+    if not db.is_friends(sender, recipient):
+        db.close()
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Return all the messages.
+    messages = db.get_messages(sender, recipient)
+    db.close()
+    rv = {"status": True, "messages": messages}
+    response.content_type = 'application/json'
+    return dumps(rv)
 
 @get('/get_username')
 def get_username():
