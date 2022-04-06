@@ -340,14 +340,14 @@ def send_message():
     db = sql.SQLDatabase()
     if db.add_message(sender, recipient, message, mac, vector):
         db.close()
-        return True
+        rv = {"status": True}
+        response.content_type = 'application/json'
+        return dumps(rv)
     else:
         db.close()
         rv = {"status": False}
         response.content_type = 'application/json'
         return dumps(rv)
-
-    # Return status true
 
 @post('get_messages')
 def get_messages():
