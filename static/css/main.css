@@ -38,7 +38,7 @@ label {
 
 .notification_box {
     cursor: default;
-    margin-left: 20px;
+    margin-left: calc(100% - 380px);
     margin-top: 70px;
     width: 360px; 
     height: 60px; 

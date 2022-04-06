@@ -360,7 +360,7 @@ def get_messages():
 
     # Handle the form processing
     sender = request.forms.get('from')
-    recipient = session.get('username')
+    recipient = session.get_username()
 
     # If the sender is the recipient, return error
     if sender == recipient:
@@ -381,6 +381,75 @@ def get_messages():
     messages = db.get_messages(sender, recipient)
     db.close()
     rv = {"status": True, "messages": messages}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@post('/is_friends')
+def is_friends():
+
+    # Check if logged in
+    if not session.is_logged_in():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Handle the form processing
+    user = request.forms.get('username')
+    you = session.get_username()
+
+    if user == None:
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Check if friends
+    db = sql.SQLDatabase()
+    if not db.is_friends(you, user):
+        db.close()
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db.close()
+    rv = {"status": True}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@post('/get_public_key')
+def get_public_key():
+
+    # Check if logged in
+    if not session.is_logged_in():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Handle the form processing
+    user = request.forms.get('username')
+    you = session.get_username()
+
+    if user == None:
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Check friendship
+    db = sql.SQLDatabase()
+    if not db.is_friends(you, user):
+        db.close()
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    key = db.get_public_key(you, user)
+    db.close()
+
+    if (key == None):
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    rv = {"status": True, "public": key}
     response.content_type = 'application/json'
     return dumps(rv)
 

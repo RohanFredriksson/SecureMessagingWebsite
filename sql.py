@@ -81,25 +81,44 @@ class SQLDatabase():
         self.conn.commit()
 
         # Add our admin user
-        self.add_user('admin', admin_password, None, admin=1)
+        # self.add_user('admin', admin_password, None, admin=1)
 
     # Add a user to the database
     def add_user(self, username, password, public=None, admin=0):
 
-        sql_query = """
-                INSERT INTO Users(username, password, public, admin)
-                VALUES('{}', '{}', '{}', {})
-            """
+        if public == None:
 
-        if self.has_user(username):
-            return False
+            sql_query = """
+                    INSERT INTO Users(username, password, admin)
+                    VALUES('{}', '{}', {})
+                """
 
-        hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
-        sql_query = sql_query.format(username, hashed_pwd, public, admin)
+            if self.has_user(username):
+                return False
 
-        self.cur.execute(sql_query)
-        self.conn.commit()
-        return True
+            hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
+            sql_query = sql_query.format(username, hashed_pwd, admin)
+
+            self.cur.execute(sql_query)
+            self.conn.commit()
+            return True
+
+        else:
+
+            sql_query = """
+                    INSERT INTO Users(username, password, public, admin)
+                    VALUES('{}', '{}', '{}', {})
+                """
+
+            if self.has_user(username):
+                return False
+
+            hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
+            sql_query = sql_query.format(username, hashed_pwd, public, admin)
+
+            self.cur.execute(sql_query)
+            self.conn.commit()
+            return True
 
     def add_friendship(self, username1, username2):
 
@@ -287,3 +306,25 @@ class SQLDatabase():
             messages.append({"message": i[0], "mac": i[1], "vector": i[2], "time": i[3]})
 
         return messages
+
+    def get_public_key(self, requester, requested):
+
+        if (self.is_friends(requester, requested) == False):
+            return None
+
+        requester = self.get_id(requester)
+        requested = self.get_id(requested)
+
+        sql_query = """
+                SELECT public
+                FROM Users
+                WHERE id = {}
+            """
+
+        sql = sql_query.format(requested)
+        self.cur.execute(sql)
+
+        userdata = self.cur.fetchone()[0]
+        if userdata:
+            return userdata
+        return None      
