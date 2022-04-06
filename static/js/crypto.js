@@ -114,6 +114,67 @@ async function hash(message) {
   return data;
 }
 
+function validatePublicKeyString(string) {
+
+  // If there is no string, return false.
+  if (string == null) {return false;}
+
+  // Try to parse into a JSON object.
+  try {
+    public = JSON.parse(string);
+  
+    // Check if all necessary keys are in the object.
+    if (!public.hasOwnProperty("crv")) {return false;}
+    if (!public.hasOwnProperty("ext")) {return false;}
+    if (!public.hasOwnProperty("key_ops")) {return false;}
+    if (!public.hasOwnProperty("kty")) {return false;}
+    if (!public.hasOwnProperty("x")) {return false;}
+    if (!public.hasOwnProperty("y")) {return false;}
+
+    // Check all the properties of each string.
+    if (public.crv != "P-256") {return false;}
+    if (public.ext != true) {return false;}
+    if (public.key_ops.length != 0) {return false;}
+    if (public.kty != "EC") {return false;}
+
+    return true;
+  
+  } catch (err) {return false;}
+
+  
+}
+
+function validatePrivateKeyString(string) {
+
+  // If there is no string, return false.
+  if (string == null) {return false;}
+
+  // Try to parse into a JSON object.
+  try {
+    private = JSON.parse(string);
+
+    // Check if all necessary keys are in the object.
+    if (!private.hasOwnProperty("crv")) {return false;}
+    if (!private.hasOwnProperty("d")) {return false;}
+    if (!private.hasOwnProperty("ext")) {return false;}
+    if (!private.hasOwnProperty("key_ops")) {return false;}
+    if (!private.hasOwnProperty("kty")) {return false;}
+    if (!private.hasOwnProperty("x")) {return false;}
+    if (!private.hasOwnProperty("y")) {return false;}
+
+    // Check all the properties of each string.
+    if (private.crv != "P-256") {return false;}
+    if (private.ext != true) {return false;}
+    if (private.key_ops.length != 2) {return false;}
+    if (private.key_ops[0] != "deriveKey" && private.key_ops[1] != "deriveBits") {return false;}
+    if (private.kty != "EC") {return false;}
+    
+    return true;
+
+  } catch (err) {return false;}
+
+}
+
 async function main() {
 
   alice = await generateKeyPair();

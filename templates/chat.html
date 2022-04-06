@@ -9,6 +9,25 @@
       <center><input style="height: 40px; width: calc(100% - 20px);" name="username" type="text" placeholder="Aa" required/></center>
     </form>
 
+    <ul style="position: fixed; bottom: 100px;">
+      <li>1</li>
+      <li>2</li>
+      <li>3</li>
+      <li>4</li>
+      <li>5</li>
+      <li>6</li>
+      <li>7</li>
+      <li>8</li>
+      <li>9</li>
+      <li>10</li>
+      <li>11</li>
+      <li>12</li>
+      <li>13</li>
+      <li>14</li>
+      <li>15</li>
+
+    </ul>
+
   </div>
 </div>
 
@@ -103,6 +122,8 @@
       // User is a friend
       if (json.status) {
         
+        data = new URLSearchParams();
+        data.append("username", user.username);
         fetch("/get_public_key", {
           method: "POST",
           body: data,
@@ -116,16 +137,105 @@
           // User has a public key
           if (json.status) {
 
-            chatWindow.style.display = "block";
-          
+            user.publicKey = json.public;
+            // Users public key is not valid
+            if (!validatePublicKeyString(user.publicKey)) {
+
+              removeHash();
+              chatWindow.style.display = "none";
+              notificationDisplay("Sorry you cannot chat. " + user.username + "'s public key is invalid.");
+              me = {
+                username: null,
+                publicKey: null,
+                privateKey: null
+              }
+
+              user = {
+                username: null,
+                publicKey: null,
+              }
+
+            }
+
+            // Users public key is valid
+            else {
+
+              // Get your username
+              fetch("/get_username", {
+                method: "GET"
+              })
+              .then((res) => {
+                if (res.ok) {return res.json();}
+                else {throw new Error("FETCH FAILED.")}
+              })
+              .then((json) => {
+
+                me.username = json.username;
+                me.publicKey = localStorage.getItem(me.username + "_public");
+                me.privateKey = localStorage.getItem(me.username + "_private");
+
+                // You are missing a private key or a public key.
+                if (!validatePublicKeyString(me.publicKey)) {
+
+                  removeHash();
+                  chatWindow.style.display = "none";
+                  notificationDisplay("Sorry you cannot chat. Your public key is invalid.");
+                  me = {
+                    username: null,
+                    publicKey: null,
+                    privateKey: null
+                  }
+
+                  user = {
+                    username: null,
+                    publicKey: null,
+                  }
+
+                } else if (!validatePrivateKeyString(me.privateKey)) {
+
+                  removeHash();
+                  chatWindow.style.display = "none";
+                  notificationDisplay("Sorry you cannot chat. Your private key is invalid.");
+                  me = {
+                    username: null,
+                    publicKey: null,
+                    privateKey: null
+                  }
+
+                  user = {
+                    username: null,
+                    publicKey: null,
+                  }
+
+                }
+
+                // Your keys are valid.
+                else {
+
+                  chatWindow.style.display = "block";
+
+                }
+                
+              });
+
+            }
+
           // User does not have a public key
           } else {
 
             removeHash();
             chatWindow.style.display = "none";
             notificationDisplay(user.username + " does not have a public key. Cannot establish a secure channel.");
-            user.username = null;
-            user.publicKey = null;
+            me = {
+              username: null,
+              publicKey: null,
+              privateKey: null
+            }
+
+            user = {
+              username: null,
+              publicKey: null,
+            }
 
           }
 
@@ -137,8 +247,16 @@
         removeHash();
         chatWindow.style.display = "none";
         notificationDisplay("You are not friends with " + user.username + ".");
-        user.username = null;
-        user.publicKey = null;
+        me = {
+          username: null,
+          publicKey: null,
+          privateKey: null
+        }
+
+        user = {
+          username: null,
+          publicKey: null,
+        }
 
       }
     });

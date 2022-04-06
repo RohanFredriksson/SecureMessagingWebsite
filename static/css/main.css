@@ -36,6 +36,14 @@ label {
     margin-top: 15px;
 }
 
+ul {
+    padding: 0px;
+}
+
+li {
+    list-style-type: none;
+}
+
 .notification_box {
     cursor: default;
     margin-left: calc(100% - 380px);
