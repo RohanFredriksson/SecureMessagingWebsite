@@ -5,57 +5,11 @@
   <div class="content" style="width:100%; height:100%">
 
     <!-- Text Bar -->
-    <form action="" method="post" style="position: relative; top: calc(100% - 50px);">
-      <center><input style="height: 40px; width: calc(100% - 20px);" name="username" type="text" placeholder="Aa" required/></center>
+    <form id="chat_bar" autocomplete="off" action="" method="post" style="position: relative; top: calc(100% - 50px);">
+      <center><input style="height: 40px; width: calc(100% - 20px);" name="message" type="text" placeholder="Aa" required/></center>
     </form>
 
-    <ul id="chat_messages" style="margin-top:10px; margin-left:10px; position: fixed; top:70; width: calc(100% - 440px); height: calc(100% - 188px); overflow:hidden; overflow-y:scroll;">
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>10</li>
-      <li>11</li>
-      <li>12</li>
-      <li>13</li>
-      <li>14</li>
-      <li>15</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>10</li>
-      <li>11</li>
-      <li>12</li>
-      <li>13</li>
-      <li>14</li>
-      <li>15</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>10</li>
-      <li>11</li>
-      <li>12</li>
-      <li>13</li>
-      <li>14</li>
-      <li>15</li>
-    </ul>
+    <ul id="chat_messages" style="margin-top:10px; margin-left:10px; position: fixed; top:70; width: calc(100% - 440px); height: calc(100% - 188px); overflow:hidden; overflow-y:scroll;"></ul>
 
   </div>
 </div>
@@ -64,7 +18,7 @@
 <div id="left_column" style="padding:20px; width:360px; height: calc(100% - 118px);">
   <div class="content" style="width:100%; height:100%">
 
-    <form action="" method="post" style="padding-top: 10px">
+    <form autocomplete="off" action="" method="post" style="padding-top: 10px">
       <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
     </form>
 
@@ -78,9 +32,9 @@
 
   // DOM Element Variables.
   chatWindow = document.getElementById('chat_window');
-  friendsList = document.getElementById("friends");
   chatMessageList = document.getElementById("chat_messages");
-
+  friendsList = document.getElementById("friends");
+  
   // Requested friends list information.
   friends = "${friends}";
   friends = friends.replaceAll('\'','\"');
@@ -157,11 +111,58 @@
     })
     .then((json) => {
 
-      // Successfully sent the message
+      encryptedMessages = json.messages;
       if (json.status) {
         
-        messages = json.messages;
-        console.log(messages);
+        // Get your user id.
+        fetch("/get_id", {
+          method: "GET",
+        })
+        .then((res) => {
+          if (res.ok) {return res.json();}
+          else {throw new Error("FETCH FAILED.")}
+        })
+        .then((json) => {
+
+          messages = [];
+          id = json.id;
+          (async () => {
+
+            // Decrypt all the messages and determine the sender.
+            for (i = 0; i < encryptedMessages.length; i++) {
+              message = encryptedMessages[i];
+              cipher = {'data': message['message'], 'hmac': message['mac'], 'vector': message['vector']}
+              result = await decrypt(cipher, secret);
+              
+              if (result.verified) {
+                you = false;
+                sender = user.username;
+                if (encryptedMessages[i]['sender'] == id) {
+                  you = true;
+                  sender = me.username;
+                }
+                messages.push({
+                  'you': you,
+                  'username': sender,
+                  'message': result.message,
+                  'time': encryptedMessages[i]['time']
+                });
+              }
+            }
+
+            // Sort all the messages by time sent.
+            messages.sort(function(a, b){
+              return(a.time<b.time?-1:(a.time>b.time?1:0));
+            });
+
+            chatMessageList.innerHTML = "";
+            messages.forEach(message => {
+              chatMessageList.innerHTML += "<li style=\"text-align: left\">" + message.username + ": " + message.message + "</li>";
+            });
+
+          })();
+
+        });
 
       }
 
@@ -384,8 +385,20 @@
   }
 
   setFriendsList(friends);
-
   window.onhashchange = hashchange;
   window.onload = hashchange;
+
+  chatBar = document.getElementById('chat_bar');
+  chatBar.addEventListener('submit', (e) => {
+
+    // Prevent the form from performing the POST.
+    // It will be done manually.
+    e.preventDefault();
+
+    newMessage = chatBar.elements['message'].value;
+    sendMessage(newMessage);
+    chatBar.elements['message'].value = '';
+
+  });
 
 </script>

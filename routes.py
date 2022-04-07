@@ -121,7 +121,8 @@ def post_login():
 
     db = sql.SQLDatabase()
     if (db.check_credentials(username, password)):
-        session.login(id, username)
+        user_id = db.get_id(username)
+        session.login(user_id, username)
         db.close()
         session.send_notification("Welcome " + username + "!")
         redirect('/')
@@ -190,8 +191,9 @@ def post_register():
         return page_view("register")
     
     db.add_user(username, password, public_key, 0)
+    user_id = db.get_id(username)
     db.close()
-    session.login(id, username)
+    session.login(user_id, username)
     session.send_notification("Welcome " + username + "!")
     redirect('/')
 
@@ -457,6 +459,13 @@ def get_public_key():
 def get_username():
 
     rv = {'username': session.get_username()}    
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@get('/get_id')
+def get_id():
+
+    rv = {'id': session.get_id()}    
     response.content_type = 'application/json'
     return dumps(rv)
 
