@@ -145,7 +145,7 @@
                   'you': you,
                   'username': sender,
                   'message': result.message,
-                  'time': encryptedMessages[i]['time']
+                  'time': new Date(encryptedMessages[i]['time'].replace(' ','T') + 'Z')
                 });
               }
             }
@@ -157,7 +157,8 @@
 
             chatMessageList.innerHTML = "";
             messages.forEach(message => {
-              chatMessageList.innerHTML += "<li style=\"text-align: left\">" + message.username + ": " + message.message + "</li>";
+              console.log(message);
+              chatMessageList.innerHTML += "<li style=\"text-align: left\">[" + ("0" + message.time.getHours()).slice(-2) + ":" + ("0" + message.time.getMinutes()).slice(-2) + "] &lt" + message.username + "&gt " + message.message + "</li>";
             });
 
           })();

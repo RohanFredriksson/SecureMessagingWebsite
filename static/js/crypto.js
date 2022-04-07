@@ -172,6 +172,8 @@ function validatePrivateKeyString(string) {
 
 }
 
+/*
+// Example Execution
 async function main() {
 
   alice = await generateKeyPair();
@@ -192,3 +194,4 @@ async function main() {
 
 }
 main();
+*/
