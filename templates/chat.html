@@ -192,8 +192,8 @@
     data.append("to", user.username);
     data.append('message', cipher.data);
     data.append('mac', cipher.hmac);
-    data.append('vector', btoa(String.fromCharCode.apply(null, cipher.vector)));
-
+    data.append('vector',cipher.vector);
+    
     fetch("/send_message", {
       method: "POST",
       body: data,

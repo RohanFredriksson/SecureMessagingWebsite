@@ -54,7 +54,7 @@ async function encrypt(text, secretWebKey) {
   string = String.fromCharCode.apply(null, buffer);
   const hmac = btoa(string)
 
-  return {data, hmac, vector};
+  return {data: data, hmac: hmac, vector: btoa(String.fromCharCode.apply(null, vector))};
 }
 
 /*
@@ -70,7 +70,6 @@ async function decrypt(cipher, secretWebKey) {
   // This should be in the try block, because if someone tampers with the cipher, it will throw an exception when trying to decode.
   try {
 
-    // TODO: Stabilise verification.
     // Verify the HMAC
     const digest = hash(secretWebKey.k);
     let string = atob(cipher.hmac);
@@ -87,8 +86,6 @@ async function decrypt(cipher, secretWebKey) {
       buffer,
       new TextEncoder().encode(cipher.data)
     ); 
-    // For some reason if verification fails, it crashes. It works if verification passes.
-    // Crashes when the wrong secret web key is used.
 
     if (!result) {
       return {verified: false, message: null};
@@ -97,7 +94,7 @@ async function decrypt(cipher, secretWebKey) {
     // Decrypt the data
     string = atob(cipher.data);
     buffer = new Uint8Array([...string].map((char) => char.charCodeAt(0)));
-    const algorithm = {name: "AES-GCM", iv: new TextEncoder().encode(cipher.vector)};
+    const algorithm = {name: "AES-GCM", iv: new TextEncoder().encode(new Uint8Array([...atob(cipher.vector)].map((char) => char.charCodeAt(0))))};
     const decryptedData = await window.crypto.subtle.decrypt(algorithm, secret, buffer);
     return {verified: true, message: new TextDecoder().decode(decryptedData)};
 
