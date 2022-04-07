@@ -313,7 +313,7 @@ def validate_register():
     response.content_type = 'application/json'
     return dumps(rv)
 
-@post('send_message')
+@post('/send_message')
 def send_message():
 
     # Check if logged in
@@ -349,7 +349,7 @@ def send_message():
         response.content_type = 'application/json'
         return dumps(rv)
 
-@post('get_messages')
+@post('/get_messages')
 def get_messages():
 
     # Check if logged in

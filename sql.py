@@ -74,7 +74,7 @@ class SQLDatabase():
             recipient INTEGER NOT NULL REFERENCES Users(id),
             message TEXT,
             mac CHAR(44),
-            vector CHAR(12),
+            vector CHAR(16),
             timesent DATETIME,
             CONSTRAINT PK_Messages PRIMARY KEY (sender, recipient)
         )""")
@@ -252,6 +252,13 @@ class SQLDatabase():
 
     def add_message(self, sender, recipient, message, mac, vector):
 
+        print(message)
+        print(mac)
+        print(vector)
+
+        if (self.is_friends(sender, recipient) == False):
+            return False
+
         sender = self.get_id(sender)
         recipient = self.get_id(recipient)
 
@@ -261,12 +268,9 @@ class SQLDatabase():
         if (sender == recipient):
             return False
 
-        if (self.is_friends(sender, recipient) == False):
-            return False
-
         sql_query = """
                 INSERT INTO Messages(sender, recipient, message, mac, vector, timesent)
-                VALUES('{}', '{}', '{}', '{}', '{}', GETDATE())
+                VALUES({}, {}, '{}', '{}', '{}', DateTime('now'))
             """
 
         sql = sql_query.format(sender, recipient, message, mac, vector)
@@ -278,6 +282,9 @@ class SQLDatabase():
 
     def get_messages(self, sender, recipient):
 
+        if (self.is_friends(sender, recipient) == False):
+            return []
+
         sender = self.get_id(sender)
         recipient = self.get_id(recipient)
 
@@ -285,9 +292,6 @@ class SQLDatabase():
             return []
 
         if (sender == recipient):
-            return []
-
-        if (self.is_friends(sender, recipient) == False):
             return []
 
         sql_query = """
