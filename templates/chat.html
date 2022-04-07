@@ -171,9 +171,6 @@
 
   async function sendMessage(message) {
 
-    console.log(me)
-    console.log(user)
-
     if (me.username == null || !validatePublicKeyString(me.publicKey) || !validatePrivateKeyString(me.privateKey)) {
       notificationDisplay("Error sending message.");
       return;

@@ -76,7 +76,7 @@ class SQLDatabase():
             mac CHAR(44),
             vector CHAR(16),
             timesent DATETIME,
-            CONSTRAINT PK_Messages PRIMARY KEY (sender, recipient)
+            CONSTRAINT PK_Messages PRIMARY KEY (sender, recipient, timesent)
         )""")
         self.conn.commit()
 
@@ -252,10 +252,6 @@ class SQLDatabase():
 
     def add_message(self, sender, recipient, message, mac, vector):
 
-        print(message)
-        print(mac)
-        print(vector)
-
         if (self.is_friends(sender, recipient) == False):
             return False
 
@@ -294,10 +290,12 @@ class SQLDatabase():
         if (sender == recipient):
             return []
 
+        messages = []
+
         sql_query = """
-                SELECT message, mac, vector, timesent
+                SELECT sender, message, mac, vector, timesent
                 FROM Messages
-                WHERE sender = '{}' AND recipient = '{}'
+                WHERE sender = {} AND recipient = {}
             """
 
         sql = sql_query.format(sender, recipient)
@@ -305,9 +303,21 @@ class SQLDatabase():
         self.cur.execute(sql)
         ls = self.cur.fetchall()
 
-        messages = []
         for i in ls:
-            messages.append({"message": i[0], "mac": i[1], "vector": i[2], "time": i[3]})
+            messages.append({"sender": i[0], "message": i[1], "mac": i[2], "vector": i[3], "time": i[4]})
+
+        sql_query = """
+                SELECT sender, message, mac, vector, timesent
+                FROM Messages
+                WHERE sender = {} AND recipient = {}
+            """
+
+        sql = sql_query.format(recipient, sender)
+
+        self.cur.execute(sql)
+        ls = self.cur.fetchall()
+        for i in ls:
+            messages.append({"sender": i[0], "message": i[1], "mac": i[2], "vector": i[3], "time": i[4]})
 
         return messages
 
