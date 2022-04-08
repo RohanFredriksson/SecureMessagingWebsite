@@ -86,6 +86,22 @@ def get_index():
         return page_view("chat", friends=friendlist)
     return page_view("index")
 
+@post('/')
+@post('/home')
+def post_chat():
+    username = request.forms.get('username')
+    me = session.get_username()
+    db = sql.SQLDatabase()
+    friendlist = db.show_friendlist(session.get_username())
+    if db.is_friends(me, username):
+        #Trying to figure out how to return the <li> href of username -> the chatbox..
+        return page_view("chat", friends=friendlist)
+    else:
+        msg = "You are not friends with "+username+". If you'd like to chat with "+username+", please add "+username+" to your friendlist first."
+        session.send_notification(msg)
+        return page_view("chat", friends=friendlist)
+
+
 #-----------------------------------------------------------------------------
 
 # Display the login page
