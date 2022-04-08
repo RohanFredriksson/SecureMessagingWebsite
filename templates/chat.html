@@ -1,4 +1,5 @@
 <script src="js/crypto.js"></script>
+<link rel="stylesheet" type="text/css" href="css/chat.css">
 
 <!-- Chat Window -->
 <div id="chat_window" style="padding:20px; width: calc(100% - 420px); height: calc(100% - 118px); float: right; display: none">
@@ -72,7 +73,7 @@
   function setFriendsList(arr) {
     if (exists) {
       friends.forEach(friend => {
-        friendsList.innerHTML += "<li><a href=\"#" + friend + "\">" + friend + "</a></li>";
+        friendsList.innerHTML += "<li class='friend'><img src='img/profile.jpg' /><a href=\"#" + friend + "\">" + friend + "</a></li>";
       });
     }
   }
