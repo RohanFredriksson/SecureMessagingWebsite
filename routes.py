@@ -94,9 +94,10 @@ def post_chat():
     db = sql.SQLDatabase()
     friendlist = db.show_friendlist(session.get_username())
     if db.is_friends(me, username):
-        #Trying to figure out how to return the <li> href of username -> the chatbox..
-        return page_view("chat", friends=friendlist)
+        db.close()
+        redirect('/#' + username)
     else:
+        db.close()
         msg = "You are not friends with "+username+". If you'd like to chat with "+username+", please add "+username+" to your friendlist first."
         session.send_notification(msg)
         return page_view("chat", friends=friendlist)
