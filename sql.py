@@ -355,8 +355,11 @@ class SQLDatabase():
                 WHERE id = {}
             """
 
-        sql = sql_query.format(key, id)
-        self.cur.execute(sql)
-        self.conn.commit()
+        try:
+            sql = sql_query.format(key, id)
+            self.cur.execute(sql)
+            self.conn.commit()
+        except:
+            return False
 
         return True
