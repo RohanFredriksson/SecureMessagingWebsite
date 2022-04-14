@@ -298,6 +298,29 @@ def get_profile():
         return page_view("profile")
     return redirect('/login')
 
+@post('/change_key')
+def change_key():
+
+    username = session.get_username()
+    public = request.forms.get('public')
+
+    if username == None or public == None:
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db = sql.SQLDatabase()
+    if not db.change_public_key(username, public):
+        db.close()
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db.close()
+    rv = {"status": True}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
 @post('/validate_register')
 def validate_register():
 
@@ -311,7 +334,7 @@ def validate_register():
         return dumps(rv)
 
     db = sql.SQLDatabase()
-    if (db.has_user(username)):
+    if db.has_user(username):
         db.close()
         rv = {"status": False}
         response.content_type = 'application/json'

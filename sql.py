@@ -341,4 +341,22 @@ class SQLDatabase():
         userdata = self.cur.fetchone()[0]
         if userdata:
             return userdata
-        return None      
+        return None
+
+    def change_public_key(self, username, key):
+
+        id = self.get_id(username)
+        if id < 0:
+            return False
+
+        sql_query = """
+                UPDATE Users
+                SET public = '{}'
+                WHERE id = {}
+            """
+
+        sql = sql_query.format(key, id)
+        self.cur.execute(sql)
+        self.conn.commit()
+
+        return True

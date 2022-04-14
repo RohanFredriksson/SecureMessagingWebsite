@@ -1,21 +1,144 @@
+<script src="js/crypto.js"></script>
 <center>
   <div class="content" style="width: 400px; height: 380px; margin-top: 100px;">
-    <div style="margin-left: 40px; padding-top: 12px; width: 320px; height: 100%">
-      <p style="margin-bottom:12; margin-top: 0;">Public Key:</p>
-      <div id="public_key_box" style="overflow-wrap: break-word; margin: 0; line-break: anywhere;" class="key_box"><p style="margin:0" id="public_key_box_text"></p></div>
-      <p style="margin-top:12; margin-bottom:12;">Private Key: Hover to view</p>
-      <div id="private_key_box" style="overflow-wrap: break-word; margin: 0; line-break: anywhere;" class="key_box"><p style="margin:0" id="private_key_box_text" class="spoiler"></p></div>
-      <br style="line-height: 12px" />
-      <a href="/change_key" style="text-decoration: none;">Change your keys</a>
-    </div>
+
+    <form id="keys" action="/change_key" method="post" autocomplete="off">
+      <p style="padding-top: 15px">Public Key</p>
+      <label><center><textarea style="height: 80px; width:320px; line-break: anywhere; resize: none;" name="public" type="text" spellcheck="false" placeholder="Public Key" required></textarea></center></label>
+      <p style="padding-top: 15px">Private Key</p>
+      <label><center><textarea style="height: 110px; width:320px; line-break: anywhere; resize: none;" name="private" type="text" spellcheck="false" placeholder="Private Key" required></textarea></center></label>
+      <input style="height: 40px; width:152.5px; margin-left:207.5px; margin-top: 15px;" value="Save Changes" type="submit"/>
+    </form>
+
+    <form id="generate">
+      <input style="height: 40px; width:152.5px; margin-left:40px; margin-top: -56px;" value="New Key Pair" type="submit"/>
+    </form>
+
   </div>
 </center>
 
 <script>
 
-  privateKeyBox = document.getElementById('private_key_box');
-  publicKeyText = document.getElementById('public_key_box_text');
-  privateKeyText = document.getElementById('private_key_box_text');
+  form = document.getElementById('keys');
+  generate = document.getElementById('generate');
+
+  username = null;
+  publicKey = null;
+  privateKey = null;
+
+  generate.addEventListener('submit', (e) => {
+
+    // Prevent original action.
+    e.preventDefault();
+
+    if (username == null) {
+      return; 
+    }
+
+    if (confirm("Are you sure you want to generate a new key pair? All previous messages that you have sent/received will become unreadable.")) {
+      
+      (async () => {
+
+        // Generate a new key pair for the user.
+        keyPair = await generateKeyPair();
+
+        // Construct the post request.
+        data = new URLSearchParams();
+        data.append("public", JSON.stringify(keyPair.public));
+
+        fetch("/change_key", {
+          method: "POST",
+          body: data,
+        })
+        .then((res) => {
+          if (res.ok) {return res.json();}
+          else {throw new Error("FETCH FAILED.")}
+        })
+        .then((json) => {
+
+          if (json.status) {
+
+            // Store the new keys in the specified variables
+            publicKey = JSON.stringify(keyPair.public);
+            privateKey = JSON.stringify(keyPair.private);
+
+            form.elements['public'].value = JSON.stringify(keyPair.public);
+            form.elements['private'].value = JSON.stringify(keyPair.private);
+
+            // Store the public and private keys locally.
+            localStorage.setItem(username + "_public", publicKey);
+            localStorage.setItem(username + "_private", privateKey);
+
+            notificationDisplay("Success! New keys have been successfully generated.");
+
+          } else {
+            notificationDisplay("Something went wrong. Key details have not changed.");
+          }
+
+        });
+
+      })();
+
+    }
+
+  });
+
+  form.addEventListener('submit', (e) => {
+
+    // Prevent original action.
+    e.preventDefault();
+
+    if (username == null || publicKey == null || privateKey == null) {
+      return; 
+    }
+
+    if (!validatePublicKeyString(form.elements.public.value)) {
+      notificationDisplay("Public key is invalid.");
+      return;
+    }
+
+    if (!validatePrivateKeyString(form.elements.private.value)) {
+      notificationDisplay("Private key is invalid");
+      return;
+    }
+
+    if (confirm("Are you sure you want change your keys? All previous messages that you have sent/received will become unreadable.")) {
+
+      // Construct a post request
+      data = new URLSearchParams();
+      data.append("public", form.elements.public.value);
+
+      fetch("/change_key", {
+        method: "POST",
+        body: data,
+      })
+      .then((res) => {
+        if (res.ok) {return res.json();}
+        else {throw new Error("FETCH FAILED.")}
+      })
+      .then((json) => {
+
+        if (json.status) {
+
+          // Store the new keys in the specified variables
+          publicKey = JSON.stringify(keyPair.public);
+          privateKey = JSON.stringify(keyPair.private);
+
+          // Store the public and private keys locally.
+          localStorage.setItem(username + "_public", publicKey);
+          localStorage.setItem(username + "_private", privateKey);
+
+          notificationDisplay("Success! Key changes have been saved.");
+
+        } else {
+          notificationDisplay("Something went wrong. Key details have not changed.");
+        }
+
+      });
+
+    }
+
+  });
 
   async function fillKeyBoxes() {
 
@@ -32,11 +155,8 @@
       publicKey = localStorage.getItem(username + "_public");
       privateKey = localStorage.getItem(username + "_private");
 
-      publicKeyText.innerText = "None";
-      privateKeyText.innerText = "None";
-
-      if (publicKey != null) {publicKeyText.innerText = publicKey;}
-      if (privateKey != null) {privateKeyText.innerText = privateKey;}
+      if (publicKey != null) {form.elements['public'].value = publicKey;}
+      if (privateKey != null) {form.elements['private'].value = privateKey;}
       
     });
 
