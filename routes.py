@@ -265,15 +265,16 @@ def post_verify():
     db = sql.SQLDatabase()
     if db.has_user(username):
         user_id = db.get_id(username)
+        session.send_notification("Welcome " + username + "!")
     else:
         db.add_user(user_info[0], user_info[1], user_info[2], user_info[3], user_info[4])
         user_id = db.get_id(username)
+        session.send_notification("Thank you for signing up. You are all set!")
     
     db.close()
 
     #Verification successful, user logged in
     session.login(user_id, username)
-    session.send_notification("Welcome " + username + "!")
     redirect('/home')
     
 #-----------------------------------------------------------------------------
