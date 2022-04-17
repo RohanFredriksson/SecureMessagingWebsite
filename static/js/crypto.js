@@ -176,21 +176,32 @@ function validatePrivateKeyString(string) {
 // Example Execution
 async function main() {
 
-  alice = await generateKeyPair();
-  bob = await generateKeyPair();
-  mallory = await generateKeyPair();
+  // ------- Asymmetric key pair generation -------
+  alice = await generateKeyPair();   // Alice generates an asymmetric key pair.
+  bob = await generateKeyPair();     // Bob generates an asymmetric key pair.
+  mallory = await generateKeyPair(); // Mallory trying to snoop generates an asymmetric key pair.
 
-  aliceSecret = await generateSecret(bob.public, alice.private);
-  bobSecret = await generateSecret(alice.public, bob.private);
-  mallorySecret = await generateSecret(alice.public, mallory.private);
+  // ------- Alice sends a message ----------------
+  aliceSecret = await generateSecret(bob.public, alice.private); // Alice generates a secret key using Bob's public key.
 
-  cipher = await encrypt("According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. The bee, of course, flies anyway because bees don't care what humans think is impossible.", aliceSecret);
+  // Alice encrypts the message.
+  cipher = await encrypt("According to all known laws of aviation, there is no way a bee should be able to fly...", aliceSecret);
 
+  // Alice then sends the cipher over to bob.
+
+  // ------ Bob decrypts the cipher ---------------
+  bobSecret = await generateSecret(alice.public, bob.private); // Bob generates the same secret key using Alice's public key.
+
+  // Bob decrypts the cipher using the shared secret.
   data = await decrypt(cipher, bobSecret);
-  console.log(data);
+  console.log(data); // Cipher successfully is decrypted message is displayed.
 
+  // ------ Mallory attempts to snoop -------------
+  mallorySecret = await generateSecret(alice.public, mallory.private); // Since Mallory doesn't know Bob's private key, she uses her own.
+
+  // Mallory attempts to decrypts the cipher using the incorrect secret key.
   data = await decrypt(cipher, mallorySecret);
-  console.log(data);
+  console.log(data); // Cipher cannot be decrypted. No message can be viewed.
 
 }
 main();
