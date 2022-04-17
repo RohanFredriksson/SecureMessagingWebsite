@@ -11,6 +11,7 @@ import session
 import sql
 import view
 import random
+import verify
 # Initialise our views, all arguments are defaults for the template
 page_view = view.View()
 
@@ -138,11 +139,14 @@ def post_login():
 
     db = sql.SQLDatabase()
     if (db.check_credentials(username, password)):
-        user_id = db.get_id(username)
-        session.login(user_id, username)
+
+        user_email = db.get_email(username)
+        verification_code = verify.verify_login(user_email)
+
+        verify.verification_code = verification_code
+        verify.username = username
         db.close()
-        session.send_notification("Welcome " + username + "!")
-        redirect('/')
+        return page_view("verify")
 
     db.close()
     session.send_notification("Username or password is incorrect.")
@@ -175,9 +179,10 @@ def post_register():
     # Handle the form processing
     username = request.forms.get('username')
     password = request.forms.get('password')
+    email = request.forms.get('email')
     public_key = request.forms.get('public')
 
-    if username == None or password == None or public_key == None:
+    if username == None or password == None or public_key == None or email == None:
         session.send_notification("Missing required information.")
         return page_view("register")
 
@@ -206,14 +211,71 @@ def post_register():
         db.close()
         session.send_notification("Invalid password characters. (A-Z,a-z,0-9,@#$%^&+=) Please enter a different password.")
         return page_view("register")
+
+    if not util.validate_email(email):
+        db.close()
+        session.send_notification("E-mail address in wrong format. Please enter a valid email.")
+        return page_view("register")
     
-    db.add_user(username, password, public_key, 0)
-    user_id = db.get_id(username)
+
     db.close()
+
+    verification_code = verify.verify_email(email)
+    verify.username = username
+    verify.verification_code = verification_code
+    verify.user_info = [username, password, email, public_key, 0]
+
+    return page_view("verify")
+    # db.add_user(username, password, email, public_key, 0)
+    # user_id = db.get_id(username)
+    # db.close()
+    # session.login(user_id, username)
+    # session.send_notification("Welcome " + username + "!")
+    # redirect('/')
+
+#-----------------------------------------------------------------------------
+
+@get('/verify')
+def get_verify():
+    '''
+        Serves the verification page
+    '''
+    return page_view("verify")
+
+
+@post('/verify')
+def post_verify():
+    '''
+        Checks the verification code
+    '''
+    userinput = request.forms.get('digitcode')
+    username = verify.username
+    code = verify.verification_code
+    user_info = verify.user_info
+
+    #Checks for a valid user input
+    if userinput == None or len(userinput) != 4 :
+        session.send_notification("It must be a 4 digit code!")
+        return page_view("verify")
+
+    if userinput != code:
+        session.send_notification("Failed to verify. Please try again.")
+        return page_view("verify")
+
+    db = sql.SQLDatabase()
+    if db.has_user(username):
+        user_id = db.get_id(username)
+    else:
+        db.add_user(user_info[0], user_info[1], user_info[2], user_info[3], user_info[4])
+        user_id = db.get_id(username)
+    
+    db.close()
+
+    #Verification successful, user logged in
     session.login(user_id, username)
     session.send_notification("Welcome " + username + "!")
-    redirect('/')
-
+    redirect('/home')
+    
 #-----------------------------------------------------------------------------
 
 @get('/friends')

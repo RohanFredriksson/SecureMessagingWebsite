@@ -55,6 +55,7 @@ class SQLDatabase():
             id INTEGER PRIMARY KEY,
             username VARCHAR(16),
             password CHAR(64),
+            email CHAR(120),
             public CHAR(150),
             admin INTEGER DEFAULT 0
         )""")
@@ -84,20 +85,20 @@ class SQLDatabase():
         # self.add_user('admin', admin_password, None, admin=1)
 
     # Add a user to the database
-    def add_user(self, username, password, public=None, admin=0):
+    def add_user(self, username, password, email, public=None, admin=0):
 
         if public == None:
 
             sql_query = """
-                    INSERT INTO Users(username, password, admin)
-                    VALUES('{}', '{}', {})
+                    INSERT INTO Users(username, password, email, admin)
+                    VALUES('{}', '{}', '{}', {})
                 """
 
             if self.has_user(username):
                 return False
 
             hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
-            sql_query = sql_query.format(username, hashed_pwd, admin)
+            sql_query = sql_query.format(username, hashed_pwd, email, admin)
 
             self.cur.execute(sql_query)
             self.conn.commit()
@@ -106,15 +107,15 @@ class SQLDatabase():
         else:
 
             sql_query = """
-                    INSERT INTO Users(username, password, public, admin)
-                    VALUES('{}', '{}', '{}', {})
+                    INSERT INTO Users(username, password, email, public, admin)
+                    VALUES('{}', '{}', '{}', '{}', {})
                 """
 
             if self.has_user(username):
                 return False
 
             hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
-            sql_query = sql_query.format(username, hashed_pwd, public, admin)
+            sql_query = sql_query.format(username, hashed_pwd, email, public, admin)
 
             self.cur.execute(sql_query)
             self.conn.commit()
@@ -225,7 +226,24 @@ class SQLDatabase():
         userdata = self.cur.fetchone()
         if userdata:
             return userdata[0]
-        return -1        
+        return -1       
+
+    # Returns email address for the following user
+    def get_email(self, username):
+
+        sql_query = """
+                SELECT email
+                FROM Users
+                WHERE username = '{username}'
+            """
+
+        sql_query = sql_query.format(username=username)
+        self.cur.execute(sql_query)
+
+        userdata = self.cur.fetchone()
+        if userdata:
+            return userdata[0]
+        return -1       
 
     # Check login credentials
     def check_credentials(self, username, password):

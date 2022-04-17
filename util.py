@@ -25,4 +25,10 @@ def validate_password(password):
     if re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{8,}', password):
         return True
     return False
+
+def validate_email(email):
+    if re.match(r'[\w-]{1,20}@\w{2,20}\.\w{2,3}$', email):
+        return True
+    return False
+
         
