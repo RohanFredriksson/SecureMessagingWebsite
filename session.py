@@ -48,3 +48,6 @@ def get_username():
 def get_id():
     current_session = request.environ.get('beaker.session')
     return current_session['user_id']
+
+def get():
+    return request.environ.get('beaker.session')

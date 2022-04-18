@@ -143,8 +143,15 @@ def post_login():
         user_email = db.get_email(username)
         verification_code = verify.verify_login(user_email)
 
-        verify.verification_code = verification_code
-        verify.username = username
+        # Store all required information to log in after verification
+        s = session.get()
+        s['verification_username'] = username
+        s['verification_code'] = verification_code
+        s['verification_password'] = None
+        s['verification_email'] = None
+        s['verification_public_key'] = None
+        s['verification_admin'] = None
+
         db.close()
         return page_view("verify")
 
@@ -226,37 +233,39 @@ def post_register():
     db.close()
 
     verification_code = verify.verify_email(email)
-    verify.username = username
-    verify.verification_code = verification_code
-    verify.user_info = [username, password, email, public_key, 0]
+
+    # Store all required information to register an account after verification.
+    s = session.get()
+    s['verification_username'] = username
+    s['verification_code'] = verification_code
+    s['verification_password'] = password
+    s['verification_email'] = email
+    s['verification_public_key'] = public_key
+    s['verification_admin'] = 0
 
     return page_view("verify")
-    # db.add_user(username, password, email, public_key, 0)
-    # user_id = db.get_id(username)
-    # db.close()
-    # session.login(user_id, username)
-    # session.send_notification("Welcome " + username + "!")
-    # redirect('/')
 
 #-----------------------------------------------------------------------------
-
-@get('/verify')
-def get_verify():
-    '''
-        Serves the verification page
-    '''
-    return page_view("verify")
-
 
 @post('/verify')
 def post_verify():
     '''
         Checks the verification code
     '''
+
+    s = session.get()
+
     userinput = request.forms.get('digitcode')
-    username = verify.username
-    code = verify.verification_code
-    user_info = verify.user_info
+    username = s['verification_username']
+    code = s['verification_code']
+    password = s['verification_password']
+    email = s['verification_email']
+    public_key = s['verification_public_key']
+    admin = s['verification_admin']
+
+    if username == None:
+        session.send_notification("You need to log in or register to verify!")
+        redirect('/')
 
     #Checks for a valid user input
     if userinput == None or len(userinput) != 4 :
@@ -272,15 +281,23 @@ def post_verify():
         user_id = db.get_id(username)
         session.send_notification("Welcome " + username + "!")
     else:
-        db.add_user(user_info[0], user_info[1], user_info[2], user_info[3], user_info[4])
+        db.add_user(username, password, email, public_key, admin)
         user_id = db.get_id(username)
         session.send_notification("Thank you for signing up. You are all set!")
     
     db.close()
 
+    # Remove all things from the session now.
+    s['verification_username'] = None
+    s['verification_code'] = None
+    s['verification_password'] = None
+    s['verification_email'] = None
+    s['verification_public_key'] = None
+    s['verification_admin'] = None
+
     #Verification successful, user logged in
     session.login(user_id, username)
-    redirect('/home')
+    redirect('/')
     
 #-----------------------------------------------------------------------------
 

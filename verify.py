@@ -2,10 +2,6 @@ import random
 import smtplib
 from email.message import EmailMessage
 
-username = ''
-user_info = []
-verification_code = ''
-
 #Generates 4 digit code for verification
 def generate_code():
     code = random.randint(1000,9999)
