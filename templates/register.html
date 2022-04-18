@@ -5,9 +5,9 @@
       <p style="margin:0;">Please fill in to register:</p>
       <form id="register" action="/register" method="post">
         <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
+        <label><center><input style="height: 40px; width:250px;" name="email" type="email" placeholder="Enter E-mail address" required/></center></label>
         <label><center><input style="height: 40px; width:250px;" name="password" type="password" placeholder="Enter password" required/></center></label>
         <label><center><input style="height: 40px; width:250px;" name="confirmation" type="password" placeholder="Confirm password" required/></center></label>
-        <label><center><input style="height: 40px; width:250px;" name="email" type="email" placeholder="Enter your E-mail address" required/></center></label>
         <input style="display: none;" name="public" type="text">
         <label><center><input style="height: 40px; width:250px;" value="Register" type="submit"/></center></label>
       </form>
@@ -25,10 +25,11 @@
     e.preventDefault();
 
     username = form.elements['username'].value;
+    email = form.elements['email'].value;
     password = form.elements['password'].value;
     confirmation = form.elements['confirmation'].value;
 
-    async function register(username, password) {
+    async function register(username, email, password) {
       
       // Generate a new key pair for the user.
       keyPair = await generateKeyPair();
@@ -38,6 +39,7 @@
       // Need to validate the details before storing locally, in case we overwrite previous details.
       data = new URLSearchParams();
       data.append("username", username);
+      data.append("email", email);
       data.append("password", password);
 
       fetch("/validate_register", {
@@ -68,7 +70,7 @@
     } 
     
     else {
-      register(username, password);
+      register(username, email, password);
     }
 
   });

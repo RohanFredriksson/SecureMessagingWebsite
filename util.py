@@ -27,7 +27,7 @@ def validate_password(password):
     return False
 
 def validate_email(email):
-    if re.match(r'[\w-]{1,20}@\w{2,20}\.\w{2,3}$', email):
+    if re.fullmatch(r'[\w.-]{1,20}@\w{2,20}\.\w{2,3}', email):
         return True
     return False
 

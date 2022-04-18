@@ -197,6 +197,11 @@ def post_register():
         session.send_notification("Username too short. Please enter a different username.")
         return page_view("register")
 
+    if len(username) > 16:
+        db.close()
+        session.send_notification("Username too long. Please enter a different username.")
+        return page_view("register")
+
     if not util.validate_username(username):
         db.close()
         session.send_notification("Username must be alphanumeric. Please enter a different username.")
@@ -390,8 +395,9 @@ def validate_register():
     # Handle the form processing
     username = request.forms.get('username')
     password = request.forms.get('password')
+    email = request.forms.get('email')
 
-    if username == None or password == None:
+    if username == None or password == None or email == None:
         rv = {"status": False}
         response.content_type = 'application/json'
         return dumps(rv)
@@ -410,6 +416,11 @@ def validate_register():
         return dumps(rv)
 
     if not util.validate_password(password):
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    if not util.validate_email(email):
         rv = {"status": False}
         response.content_type = 'application/json'
         return dumps(rv)
