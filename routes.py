@@ -383,6 +383,14 @@ def get_profile():
         return page_view("profile")
     return redirect('/login')
 
+@get('/manage')
+def get_id():
+
+    if session.is_admin():
+        return page_view("manage")
+    session.send_notification("You don't have permission to access this!")
+    return redirect('/')
+
 @post('/change_key')
 def change_key():
 
@@ -597,6 +605,41 @@ def get_username():
 def get_id():
 
     rv = {'id': session.get_id()}    
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@get('/get_all_users')
+def get_all_users():
+
+    if not session.is_admin():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    rv = {'status': True}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@post('/delete_user')
+def delete_user():
+
+    if not session.is_admin():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Handle the form processing
+    user = request.forms.get('username')
+
+    db = sql.SQLDatabase()
+    if db.delete_user(user):
+        db.close()
+        rv = {'status': False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db.close()
+    rv = {'status': True}
     response.content_type = 'application/json'
     return dumps(rv)
 

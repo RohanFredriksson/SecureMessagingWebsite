@@ -1,4 +1,5 @@
 from bottle import request
+import sql
 
 def is_logged_in():
     current_session = request.environ.get('beaker.session')
@@ -12,6 +13,11 @@ def login(id, username):
     current_session['user_id'] = id
     current_session['username'] = username
     current_session['logged_in'] = True
+    current_session['is_admin'] = False
+
+    db = sql.SQLDatabase()
+    if db.is_admin(username):
+        current_session['is_admin'] = True
 
 def logout():
     current_session = request.environ.get('beaker.session')
@@ -48,6 +54,13 @@ def get_username():
 def get_id():
     current_session = request.environ.get('beaker.session')
     return current_session['user_id']
+
+def is_admin():
+    current_session = request.environ.get('beaker.session')
+    if 'is_admin' in current_session:
+        if current_session['is_admin'] == True:
+            return True
+    return False
 
 def get():
     return request.environ.get('beaker.session')

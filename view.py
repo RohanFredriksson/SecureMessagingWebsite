@@ -46,7 +46,10 @@ class View():
             :: kwargs :: Keyword arguments to pass
         '''
 
-        if session.is_logged_in():
+        if session.is_admin():
+            header = "admin_header"
+
+        elif session.is_logged_in():
             header = "user_header"
 
         body_template = self.load_template(filename)

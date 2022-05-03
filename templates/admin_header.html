@@ -1,0 +1,60 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/background.css">
+    <title>Simple Student Templating Solutions</title>
+  </head>
+  
+  <!-- Notification Box -->
+  <div id="notification_box" class="notification_box content">
+    <p id="notification_text">Hello There</p>
+  </div>
+  
+  <!-- Credit: Mohammad Abdul Mohaiman https://freefrontend.com/css-animated-backgrounds/ -->
+  <div class="area">
+    <ul class="circles">
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+  </div>
+  
+  <p>
+    <ul class="bar">
+      <li><a class="active" href="/home">Home</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/profile">Profile</a></li>
+      <li><a href="/friends">Friends</a></li>
+      <li><a href="/manage">Manage</a></li>
+      <li><a href="/logout">Logout</a></li>
+    </ul>
+  </p>
+  
+  <script src="js/header.js"></script>
+  <script>
+  
+    // Check if the notification exists.
+    displayNotification = false;
+    notification = "${notification}";
+    if (notification.length > 0) {
+      if (notification.length > 3) {
+        if (notification[0] != '$' || notification[1] != '{' || notification[notification.length-1] != '}') {
+          displayNotification = true;
+        }
+      } else {
+        displayNotification = true;
+      }
+    }
+  
+    // Display if exists.
+    if (displayNotification) {
+      notificationDisplay(notification);
+    }
+  
+  </script>

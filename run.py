@@ -69,6 +69,7 @@ def reset_db():
     '''
     db = sql.SQLDatabase()
     db.database_setup()
+    db.add_user('RohanFredriksson', 'RohanFredriksson', 'rohan.fredriksson@gmail.com', public=None, admin=1)
     return
 
 #-----------------------------------------------------------------------------
@@ -78,7 +79,7 @@ def reset_db():
 
 command_list = {
     'reset_db' : reset_db,
-    'server'       : run_server
+    'server'   : run_server
 }
 
 # The default command if none other is given

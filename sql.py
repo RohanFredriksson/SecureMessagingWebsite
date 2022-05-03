@@ -63,16 +63,16 @@ class SQLDatabase():
 
         # Represent the Friends relation as a table.
         self.cur.execute("""CREATE TABLE Friends(
-            user1 INTEGER NOT NULL REFERENCES Users(id),
-            user2 INTEGER NOT NULL REFERENCES Users(id),
+            user1 INTEGER NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
+            user2 INTEGER NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
             CONSTRAINT PK_Friends PRIMARY KEY (user1, user2)
         )""")
         self.conn.commit()
 
         # Create a messages table.
         self.cur.execute("""CREATE TABLE Messages(
-            sender INTEGER NOT NULL REFERENCES Users(id),
-            recipient INTEGER NOT NULL REFERENCES Users(id),
+            sender INTEGER NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
+            recipient INTEGER NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
             message TEXT,
             mac CHAR(44),
             vector CHAR(16),
@@ -80,9 +80,6 @@ class SQLDatabase():
             CONSTRAINT PK_Messages PRIMARY KEY (sender, recipient, timesent)
         )""")
         self.conn.commit()
-
-        # Add our admin user
-        # self.add_user('admin', admin_password, None, admin=1)
 
     # Add a user to the database
     def add_user(self, username, password, email, public=None, admin=0):
@@ -381,3 +378,32 @@ class SQLDatabase():
             return False
 
         return True
+
+    def is_admin(self, username):
+
+        sql_query = """
+                SELECT 1 
+                FROM USERS
+                WHERE username = '{}' AND admin = 1
+            """
+
+        sql_query = sql_query.format(username)
+        self.cur.execute(sql_query)
+
+        # If our query returns
+        if self.cur.fetchone():
+            return True
+        return False
+
+    def delete_user(self, username):
+
+        sql_query = """
+                DELETE 
+                FROM USERS
+                WHERE username = '{}'
+            """
+
+        sql_query = sql_query.format(username)
+        self.cur.execute(sql_query)
+
+        return not self.has_user(username)
