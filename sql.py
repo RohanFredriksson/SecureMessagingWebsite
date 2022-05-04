@@ -57,6 +57,7 @@ class SQLDatabase():
             password CHAR(64),
             email CHAR(120),
             public CHAR(150),
+            tutor INTEGER DEFAULT 0,
             admin INTEGER DEFAULT 0
         )""")
         self.conn.commit()
@@ -82,20 +83,20 @@ class SQLDatabase():
         self.conn.commit()
 
     # Add a user to the database
-    def add_user(self, username, password, email, public=None, admin=0):
+    def add_user(self, username, password, email, public=None, tutor=0, admin=0):
 
         if public == None:
 
             sql_query = """
-                    INSERT INTO Users(username, password, email, admin)
-                    VALUES('{}', '{}', '{}', {})
+                    INSERT INTO Users(username, password, email, tutor, admin)
+                    VALUES('{}', '{}', '{}', {}, {})
                 """
 
             if self.has_user(username):
                 return False
 
             hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
-            sql_query = sql_query.format(username, hashed_pwd, email, admin)
+            sql_query = sql_query.format(username, hashed_pwd, email, tutor, admin)
 
             self.cur.execute(sql_query)
             self.conn.commit()
@@ -104,15 +105,15 @@ class SQLDatabase():
         else:
 
             sql_query = """
-                    INSERT INTO Users(username, password, email, public, admin)
-                    VALUES('{}', '{}', '{}', '{}', {})
+                    INSERT INTO Users(username, password, email, public, tutor, admin)
+                    VALUES('{}', '{}', '{}', '{}', {}, {})
                 """
 
             if self.has_user(username):
                 return False
 
             hashed_pwd = hashlib.sha256((password+self.salt).encode('utf-8')).hexdigest()
-            sql_query = sql_query.format(username, hashed_pwd, email, public, admin)
+            sql_query = sql_query.format(username, hashed_pwd, email, public, tutor, admin)
 
             self.cur.execute(sql_query)
             self.conn.commit()
@@ -385,6 +386,22 @@ class SQLDatabase():
                 SELECT 1 
                 FROM USERS
                 WHERE username = '{}' AND admin = 1
+            """
+
+        sql_query = sql_query.format(username)
+        self.cur.execute(sql_query)
+
+        # If our query returns
+        if self.cur.fetchone():
+            return True
+        return False
+
+    def is_tutor(self, username):
+
+        sql_query = """
+                SELECT 1 
+                FROM USERS
+                WHERE username = '{}' AND tutor = 1
             """
 
         sql_query = sql_query.format(username)

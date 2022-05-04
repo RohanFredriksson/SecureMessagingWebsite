@@ -150,6 +150,7 @@ def post_login():
         s['verification_password'] = None
         s['verification_email'] = None
         s['verification_public_key'] = None
+        s['verification_tutor'] = None
         s['verification_admin'] = None
 
         db.close()
@@ -241,6 +242,7 @@ def post_register():
     s['verification_password'] = password
     s['verification_email'] = email
     s['verification_public_key'] = public_key
+    s['verification_tutor'] = 0
     s['verification_admin'] = 0
 
     return page_view("verify")
@@ -261,6 +263,7 @@ def post_verify():
     password = s['verification_password']
     email = s['verification_email']
     public_key = s['verification_public_key']
+    tutor = s['verification_tutor']
     admin = s['verification_admin']
 
     if username == None:
@@ -281,7 +284,7 @@ def post_verify():
         user_id = db.get_id(username)
         session.send_notification("Welcome " + username + "!")
     else:
-        db.add_user(username, password, email, public_key, admin)
+        db.add_user(username, password, email, public_key, tutor, admin)
         user_id = db.get_id(username)
         session.send_notification("Thank you for signing up. You are all set!")
     
@@ -293,6 +296,7 @@ def post_verify():
     s['verification_password'] = None
     s['verification_email'] = None
     s['verification_public_key'] = None
+    s['verification_tutor'] = None
     s['verification_admin'] = None
 
     #Verification successful, user logged in
@@ -384,12 +388,24 @@ def get_profile():
     return redirect('/login')
 
 @get('/manage')
-def get_id():
+def manage():
 
     if session.is_admin():
         return page_view("manage")
     session.send_notification("You don't have permission to access this!")
     return redirect('/')
+
+@get('/tutor')
+def tutor():
+
+    if not session.is_logged_in():
+        session.send_notification("You don't have permission to access this!")
+        return redirect('/')
+
+    if session.is_tutor():
+        return page_view("tutor_help")
+    return page_view("user_help")
+
 
 @post('/change_key')
 def change_key():
