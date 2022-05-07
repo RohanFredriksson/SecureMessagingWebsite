@@ -191,7 +191,12 @@ class SQLDatabase():
         for i in ls:
             friends.append(i[0])
 
-        return friends
+        if self.is_tutor(username):
+            students = self.get_students(username)
+            return [user for user in friends if user not in students]
+
+        tutors = self.get_tutors()
+        return [user for user in friends if user not in tutors]
 
     # Check whether a username exists.
     def has_user(self, username):
@@ -424,3 +429,45 @@ class SQLDatabase():
         self.cur.execute(sql_query)
 
         return not self.has_user(username)
+
+    def get_students(self, tutor):
+
+        if not self.is_tutor(tutor):
+            return []
+
+        id = self.get_id(tutor)
+
+        sql_query = """
+                SELECT Users.username
+                FROM Friends
+                INNER JOIN Users ON Friends.user2=Users.id 
+                AND user1={}
+                AND Users.tutor = 0
+            """
+
+        sql_query = sql_query.format(id)
+
+        self.cur.execute(sql_query)
+        ls = self.cur.fetchall()
+        students = []
+        for i in ls:
+            students.append(i[0])
+
+        return students
+
+    def get_tutors(self):
+
+        sql_query = """
+                SELECT username
+                FROM Users
+                WHERE tutor = 1
+            """
+
+        self.cur.execute(sql_query)
+        ls = self.cur.fetchall()
+        tutors = []
+        for i in ls:
+            tutors.append(i[0])
+
+        return tutors
+

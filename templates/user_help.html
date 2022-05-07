@@ -1,1 +1,424 @@
-user help
+<script src="js/crypto.js"></script>
+<link rel="stylesheet" type="text/css" href="css/chat.css">
+
+<!-- Chat Window -->
+<div id="chat_window" style="padding:20px; width: calc(100% - 420px); height: calc(100% - 118px); float: right; display: none">
+  <div class="content" style="width:100%; height:100%">
+
+    <!-- Text Bar -->
+    <form id="chat_bar" autocomplete="off" action="" method="post" style="position: relative; top: calc(100% - 50px);">
+      <center><input style="height: 40px; width: calc(100% - 20px);" name="message" type="text" placeholder="Aa" required/></center>
+    </form>
+
+    <ul id="chat_messages" style="margin-top:10px; margin-left:10px; position: fixed; top:70; width: calc(100% - 440px); height: calc(100% - 188px); overflow:hidden; overflow-y:scroll;"></ul>
+
+  </div>
+</div>
+
+<!-- Left Column -->
+<div id="left_column" style="padding:20px; width:360px; height: calc(100% - 118px);">
+  <div class="content" style="width:100%; height:100%">
+
+    <form autocomplete="off" action="" method="post" style="padding-top: 10px">
+      <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
+    </form>
+
+    <!-- Tutors List -->
+    <ul id="tutors"></ul>
+
+  </div>
+</div>
+
+<script>
+
+  // DOM Element Variables.
+  chatWindow = document.getElementById('chat_window');
+  chatMessageList = document.getElementById("chat_messages");
+  tutorsList = document.getElementById("tutors");
+  
+  // Requested tutors list information.
+  tutors = "${tutors}";
+  tutors = tutors.replaceAll('\'','\"');
+  
+  // Chat information
+  me = {
+    username: null,
+    publicKey: null,
+    privateKey: null
+  }
+
+  user = {
+    username: null,
+    publicKey: null,
+  }
+
+  // Check whether the tutors list info was passed.
+  exists = false;
+  try {
+    tutors = JSON.parse(tutors);
+    exists = true;
+  } catch {}
+
+  function removeHash () { 
+    history.pushState("", document.title, window.location.pathname + window.location.search);
+  }
+
+  function clearTutorsList() {
+    if (exists) {
+      tutorsList.innerHTML = "";
+    }
+  }
+
+  function setTutorsList(arr) {
+    if (exists) {
+      tutors.forEach(friend => {
+        tutorsList.innerHTML += "<li class='friend'><img src='img/profile.jpg' /><a href=\"#" + friend + "\">" + friend + "</a></li>";
+      });
+    }
+  }
+
+  function resetTutorsList(arr) {
+    clearTutorsList();
+    setTutorsList(arr);
+  }
+
+  async function updateChat() {
+
+    // Need all these components to display messages
+    if (me.username == null || !validatePublicKeyString(me.publicKey) || !validatePrivateKeyString(me.privateKey)) {
+      return;
+    }
+
+    if (user.username == null || !validatePublicKeyString(user.publicKey)) {
+      return;
+    }
+
+    mePublicJWT = JSON.parse(me.publicKey);
+    mePrivateJWT = JSON.parse(me.privateKey);
+    userPublicJWT = JSON.parse(user.publicKey);
+    secret = await generateSecret(userPublicJWT, mePrivateJWT);
+    
+    data = new URLSearchParams();
+    data.append("from", user.username);
+
+    fetch("/get_messages", {
+      method: "POST",
+      body: data,
+    })
+    .then((res) => {
+      if (res.ok) {return res.json();}
+      else {throw new Error("FETCH FAILED.")}
+    })
+    .then((json) => {
+
+      encryptedMessages = json.messages;
+      if (json.status) {
+        
+        // Get your user id.
+        fetch("/get_id", {
+          method: "GET",
+        })
+        .then((res) => {
+          if (res.ok) {return res.json();}
+          else {throw new Error("FETCH FAILED.")}
+        })
+        .then((json) => {
+
+          messages = [];
+          id = json.id;
+          (async () => {
+
+            // Decrypt all the messages and determine the sender.
+            for (i = 0; i < encryptedMessages.length; i++) {
+              message = encryptedMessages[i];
+              cipher = {'data': message['message'], 'hmac': message['mac'], 'vector': message['vector']}
+              result = await decrypt(cipher, secret);
+              
+              if (result.verified) {
+                you = false;
+                sender = user.username;
+                if (encryptedMessages[i]['sender'] == id) {
+                  you = true;
+                  sender = me.username;
+                }
+                messages.push({
+                  'you': you,
+                  'username': sender,
+                  'message': result.message,
+                  'time': new Date(encryptedMessages[i]['time'].replace(' ','T') + 'Z')
+                });
+              }
+            }
+
+            // Sort all the messages by time sent.
+            messages.sort(function(a, b){
+              return(a.time<b.time?-1:(a.time>b.time?1:0));
+            });
+
+            chatMessageList.innerHTML = "";
+            messages.forEach(message => {
+              console.log(message);
+              chatMessageList.innerHTML += "<li style=\"text-align: left\">[" + ("0" + message.time.getHours()).slice(-2) + ":" + ("0" + message.time.getMinutes()).slice(-2) + "] &lt" + message.username + "&gt " + message.message + "</li>";
+            });
+
+          })();
+
+        });
+
+      }
+
+    });
+
+  }
+
+  async function sendMessage(message) {
+
+    if (me.username == null || !validatePublicKeyString(me.publicKey) || !validatePrivateKeyString(me.privateKey)) {
+      notificationDisplay("Error sending message.");
+      return;
+    }
+
+    if (user.username == null || !validatePublicKeyString(user.publicKey)) {
+      notificationDisplay("Error sending message.");
+      return;
+    }
+
+    mePublicJWT = JSON.parse(me.publicKey);
+    mePrivateJWT = JSON.parse(me.privateKey);
+    userPublicJWT = JSON.parse(user.publicKey);
+    secret = await generateSecret(userPublicJWT, mePrivateJWT);
+
+    cipher = await encrypt(message, secret);
+
+    data = new URLSearchParams();
+    data.append("to", user.username);
+    data.append('message', cipher.data);
+    data.append('mac', cipher.hmac);
+    data.append('vector',cipher.vector);
+    
+    fetch("/send_message", {
+      method: "POST",
+      body: data,
+    })
+    .then((res) => {
+      if (res.ok) {return res.json();}
+      else {throw new Error("FETCH FAILED.")}
+    })
+    .then((json) => {
+
+      // Successfully sent the message
+      if (json.status) {
+        updateChat();
+      }
+
+      else {
+        notificationDisplay("Error sending message.");
+      }
+
+    });
+
+  }
+
+  function hashchange() {
+
+    if (location.hash.substring(1) == "") {
+      return;
+    }
+
+    user.username = location.hash.substring(1);
+    data = new URLSearchParams();
+    data.append("username", user.username);
+
+    // Check if the user in the hash is a friend.
+    fetch("/is_friends", {
+      method: "POST",
+      body: data,
+    })
+    .then((res) => {
+      if (res.ok) {return res.json();}
+      else {throw new Error("FETCH FAILED.")}
+    })
+    .then((json) => {
+
+      // User is not a friend
+      // Make them friends
+      if (!json.status) {
+      
+        data = new URLSearchParams();
+        data.append("username", user.username);
+        fetch("/get_public_key", {
+          method: "POST",
+          body: data,
+        })
+        .then((res) => {
+          if (res.ok) {return res.json();}
+          else {throw new Error("FETCH FAILED.")}
+        })
+        .then((json) => {
+          if (!json.status) {
+
+            removeHash();
+            chatWindow.style.display = "none";
+            notificationDisplay("Could not start a chat with " + user.username + ".");
+            me = {
+              username: null,
+              publicKey: null,
+              privateKey: null
+            }
+
+            user = {
+              username: null,
+              publicKey: null,
+            }
+
+          }
+        });
+
+      }
+
+      data = new URLSearchParams();
+      data.append("username", user.username);
+      fetch("/get_public_key", {
+        method: "POST",
+        body: data,
+      })
+      .then((res) => {
+        if (res.ok) {return res.json();}
+        else {throw new Error("FETCH FAILED.")}
+      })
+      .then((json) => {
+
+        // User has a public key
+        if (json.status) {
+
+          user.publicKey = json.public;
+          // Users public key is not valid
+          if (!validatePublicKeyString(user.publicKey)) {
+
+            removeHash();
+            chatWindow.style.display = "none";
+            notificationDisplay("Sorry you cannot chat. " + user.username + "'s public key is invalid.");
+            me = {
+              username: null,
+              publicKey: null,
+              privateKey: null
+            }
+
+            user = {
+              username: null,
+              publicKey: null,
+            }
+
+          }
+
+          // Users public key is valid
+          else {
+
+            // Get your username
+            fetch("/get_username", {
+              method: "GET"
+            })
+            .then((res) => {
+              if (res.ok) {return res.json();}
+              else {throw new Error("FETCH FAILED.")}
+            })
+            .then((json) => {
+
+              me.username = json.username;
+              me.publicKey = localStorage.getItem(me.username + "_public");
+              me.privateKey = localStorage.getItem(me.username + "_private");
+
+              // You are missing a private key or a public key.
+              if (!validatePublicKeyString(me.publicKey)) {
+
+                removeHash();
+                chatWindow.style.display = "none";
+                notificationDisplay("Sorry you cannot chat. Your public key is invalid.");
+                me = {
+                  username: null,
+                  publicKey: null,
+                  privateKey: null
+                }
+
+                user = {
+                  username: null,
+                  publicKey: null,
+                }
+
+              } else if (!validatePrivateKeyString(me.privateKey)) {
+
+                removeHash();
+                chatWindow.style.display = "none";
+                notificationDisplay("Sorry you cannot chat. Your private key is invalid.");
+                me = {
+                  username: null,
+                  publicKey: null,
+                  privateKey: null
+                }
+
+                user = {
+                  username: null,
+                  publicKey: null,
+                }
+
+              }
+
+              // Your keys are valid.
+              else {
+
+                chatWindow.style.display = "block";
+                updateChat();
+
+              }
+              
+            });
+
+          }
+
+        // User does not have a public key
+        } else {
+
+          removeHash();
+          chatWindow.style.display = "none";
+          notificationDisplay(user.username + " does not have a public key. Cannot establish a secure channel.");
+          me = {
+            username: null,
+            publicKey: null,
+            privateKey: null
+          }
+
+          user = {
+            username: null,
+            publicKey: null,
+          }
+
+        }
+
+      });
+
+    });
+
+  }
+
+  setTutorsList(tutors);
+  window.onhashchange = hashchange;
+  window.onload = hashchange;
+
+  chatBar = document.getElementById('chat_bar');
+  chatBar.addEventListener('submit', (e) => {
+
+    // Prevent the form from performing the POST.
+    // It will be done manually.
+    e.preventDefault();
+
+    newMessage = chatBar.elements['message'].value;
+    sendMessage(newMessage);
+    chatBar.elements['message'].value = '';
+
+  });
+
+  setInterval(() => {
+    updateChat();
+  }, 10000);
+
+</script>

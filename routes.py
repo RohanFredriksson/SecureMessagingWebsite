@@ -346,6 +346,33 @@ def post_friends():
     db.close()
     redirect("friends")
 
+@post('/add_friend')
+def add_friend():
+    
+    username = request.forms.get('username')
+    db = sql.SQLDatabase()
+
+    if username == session.get_username():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    if db.has_user(username) and db.is_friends(session.get_username(), username) == False:
+        db.add_friendship(session.get_username(), username)
+        db.close()
+        rv = {"status": True}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    if not db.has_user(username):
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+    else:
+        rv = {"status": True}
+        response.content_type = 'application/json'
+        return dumps(rv)
+        
 @get('/logout')
 def get_logout():
     '''
@@ -402,9 +429,32 @@ def tutor():
         session.send_notification("You don't have permission to access this!")
         return redirect('/')
 
+    db = sql.SQLDatabase()
     if session.is_tutor():
-        return page_view("tutor_help")
-    return page_view("user_help")
+        students = db.get_students(session.get_username())
+        db.close()
+        return page_view("tutor_help", students=students)
+    tutors = db.get_tutors()
+    db.close()
+    return page_view("user_help", tutors=tutors)
+
+@post('/tutor')
+def post_chat():
+    """
+    username = request.forms.get('username')
+    me = session.get_username()
+    db = sql.SQLDatabase()
+    friendlist = db.show_friendlist(session.get_username())
+    if db.is_friends(me, username):
+        db.close()
+        redirect('/#' + username)
+    else:
+        db.close()
+        msg = "You are not friends with "+username+". If you'd like to chat with "+username+", please add "+username+" to your friendlist first."
+        session.send_notification(msg)
+        return page_view("chat", friends=friendlist)
+    """
+    redirect('/tutor')
 
 
 @post('/change_key')
