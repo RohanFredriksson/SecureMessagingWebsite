@@ -1,9 +1,16 @@
 <script src="js/crypto.js"></script>
-<link rel="stylesheet" type="text/css" href="css/userdata.css">
+<link rel="stylesheet" type="text/css" href="css/chat.css">
 
 <!-- Userdata Window -->
 <div id="userdata_window" style="padding:20px; width: calc(100% - 420px); height: calc(100% - 118px); float: right; display: none">
   <div class="content" style="width:100%; height:100%">
+
+    <!-- Userdata Info -->
+    
+    <!-- Delete User -->
+    <form id="delete">
+      <input style="height: 40px; width:152.5px; margin-left:40px;" value="Delete User" type="submit"/>
+    </form>
 
   </div>
 </div>
@@ -55,7 +62,7 @@
   function setUsersList(arr) {
     if (exists) {
       users.forEach(user => {
-        usersList.innerHTML += "<li class='user'><img src='img/profile.jpg' /><a href=\"#" + user + "\">" + user + "</a></li>";
+        usersList.innerHTML += "<li class='friend'><img src='img/profile.jpg' /><a href=\"#" + user + "\">" + user + "</a></li>";
       });
     }
   }
@@ -112,7 +119,7 @@
         userdataWindow.style.display = "none";
         notificationDisplay("Data for user: " + username + " could not be found.");
         username = null;
-        
+
       }
     });
 
