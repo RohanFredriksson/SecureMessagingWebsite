@@ -471,3 +471,18 @@ class SQLDatabase():
 
         return tutors
 
+    def get_users(self):
+
+        sql_query = """
+                SELECT username
+                FROM Users
+            """
+
+        self.cur.execute(sql_query)
+        ls = self.cur.fetchall()
+        users = []
+        for i in ls:
+            users.append(i[0])
+
+        return users
+

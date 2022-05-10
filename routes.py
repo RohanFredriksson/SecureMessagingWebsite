@@ -418,7 +418,11 @@ def get_profile():
 def manage():
 
     if session.is_admin():
-        return page_view("manage")
+        db = sql.SQLDatabase()
+        users = db.get_users()
+        db.close()
+        return page_view("manage", users=users)
+
     session.send_notification("You don't have permission to access this!")
     return redirect('/')
 
@@ -674,6 +678,24 @@ def get_id():
     response.content_type = 'application/json'
     return dumps(rv)
 
+@post('/get_id')
+def post_id():
+
+    username = request.forms.get('username')
+    if username == None:
+        rv = {'id': -1}
+        response.content_type = 'application/json'
+        return dumps(rv)
+    
+    db = sql.SQLDatabase()
+    id = db.get_id(username)
+    db.close()
+
+    rv = {'id': id}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+
 @get('/get_all_users')
 def get_all_users():
 
@@ -682,7 +704,10 @@ def get_all_users():
         response.content_type = 'application/json'
         return dumps(rv)
 
-    rv = {'status': True}
+    db = sql.SQLDatabase()
+    users = db.get_users()
+    db.close()
+    rv = {'status': True, 'users': users}
     response.content_type = 'application/json'
     return dumps(rv)
 

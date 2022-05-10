@@ -1,3 +1,125 @@
-<div style="width: 100%; position: absolute; top:40vh;">
-    <h1 style="text-align: center; color: white; font-size: 40pt;">Admin Page</h1>
+<script src="js/crypto.js"></script>
+<link rel="stylesheet" type="text/css" href="css/userdata.css">
+
+<!-- Userdata Window -->
+<div id="userdata_window" style="padding:20px; width: calc(100% - 420px); height: calc(100% - 118px); float: right; display: none">
+  <div class="content" style="width:100%; height:100%">
+
+  </div>
 </div>
+
+<!-- Left Column -->
+<div id="left_column" style="padding:20px; width:360px; height: calc(100% - 118px);">
+  <div class="content" style="width:100%; height:100%">
+
+    <form autocomplete="off" action="" method="post" style="padding-top: 10px">
+      <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
+    </form>
+
+    <!-- Users List -->
+    <ul id="users"></ul>
+
+  </div>
+</div>
+
+<script>
+
+  // DOM Element Variables.
+  userdataWindow = document.getElementById('userdata_window');
+  userdataMessageList = document.getElementById("userdata_messages");
+  usersList = document.getElementById("users");
+  
+  // Requested users list information.
+  users = "${users}";
+  users = users.replaceAll('\'','\"');
+
+  username = null;
+
+  // Check whether the users list info was passed.
+  exists = false;
+  try {
+    users = JSON.parse(users);
+    exists = true;
+  } catch {}
+
+  function removeHash () { 
+    history.pushState("", document.title, window.location.pathname + window.location.search);
+  }
+
+  function clearUsersList() {
+    if (exists) {
+      usersList.innerHTML = "";
+    }
+  }
+
+  function setUsersList(arr) {
+    if (exists) {
+      users.forEach(user => {
+        usersList.innerHTML += "<li class='user'><img src='img/profile.jpg' /><a href=\"#" + user + "\">" + user + "</a></li>";
+      });
+    }
+  }
+
+  function resetUsersList(arr) {
+    clearUsersList();
+    setUsersList(arr);
+  }
+
+  function hashchange() {
+
+    if (location.hash.substring(1) == "") {
+      return;
+    }
+
+    username = location.hash.substring(1);
+    data = new URLSearchParams();
+    data.append("username", username);
+
+    // Check if the user in the hash is a user.
+    fetch("/get_id", {
+      method: "POST",
+      body: data,
+    })
+    .then((res) => {
+      if (res.ok) {return res.json();}
+      else {throw new Error("FETCH FAILED.")}
+    })
+    .then((json) => {
+
+      // User is a user
+      if (json.id != -1) {
+        
+        data = new URLSearchParams();
+        data.append("username", username);
+        fetch("/get_public_key", {
+          method: "POST",
+          body: data,
+        })
+        .then((res) => {
+          if (res.ok) {return res.json();}
+          else {throw new Error("FETCH FAILED.")}
+        })
+        .then((json) => {
+
+          userdataWindow.style.display = "block";
+
+        });
+      
+      // User is not a user
+      } else {
+
+        removeHash();
+        userdataWindow.style.display = "none";
+        notificationDisplay("Data for user: " + username + " could not be found.");
+        username = null;
+        
+      }
+    });
+
+  }
+
+  setUsersList(users);
+  window.onhashchange = hashchange;
+  window.onload = hashchange;
+
+</script>

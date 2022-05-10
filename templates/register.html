@@ -74,4 +74,19 @@
     }
 
   });
+
+  window.onbeforeunload = function() {
+    sessionStorage.setItem("username", form.elements['username'].value);
+    sessionStorage.setItem("email", form.elements['email'].value);
+    sessionStorage.setItem("password", form.elements['password'].value);
+    sessionStorage.setItem("confirmation", form.elements['confirmation'].value);
+  }
+
+  window.onload = function() {
+    if (sessionStorage.getItem("username") !== null) {form.elements['username'].value = sessionStorage.getItem("username");}
+    if (sessionStorage.getItem("email") !== null) {form.elements['email'].value = sessionStorage.getItem("email");}
+    if (sessionStorage.getItem("password") !== null) {form.elements['password'].value = sessionStorage.getItem("password");}
+    if (sessionStorage.getItem("confirmation") !== null) {form.elements['confirmation'].value = sessionStorage.getItem("confirmation");}
+  }
+
 </script>
