@@ -28,7 +28,7 @@
 <div id="left_column" style="padding:20px; width:360px; height: calc(100% - 118px);">
   <div class="content" style="width:100%; height:100%">
 
-    <form autocomplete="off" action="" method="post" style="padding-top: 10px">
+    <form autocomplete="off" action="/manage_search" method="post" style="padding-top: 10px">
       <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
     </form>
 
@@ -188,6 +188,38 @@
           window.location.reload();
         } else {
           notificationDisplay(username + " could not be deleted.");
+        }
+      });
+
+    }
+
+  });
+
+  promoteForm.addEventListener('submit', (e) => {
+
+    // Prevent the form from performing the POST.
+    // It will be done manually.
+    e.preventDefault();
+
+    if (confirm("Are you sure you want to promote " + username + " to tutor?")) {
+      
+      data = new URLSearchParams();
+      data.append("username", username);
+
+      fetch("/promote_to_tutor", {
+        method: "POST",
+        body: data,
+      })
+      .then((res) => {
+        if (res.ok) {return res.json();}
+        else {throw new Error("FETCH FAILED.")}
+      })
+      .then((json) => {
+        if (json.status) {
+          notificationDisplay("Successfully promoted " + username + ".");
+          window.location.reload();
+        } else {
+          notificationDisplay(username + " could not be promoted.");
         }
       });
 

@@ -431,6 +431,52 @@ class SQLDatabase():
 
         return not self.has_user(username)
 
+    def promote_to_tutor(self, username):
+
+        sql_query = """
+                UPDATE USERS
+                SET tutor = 1
+                WHERE username = '{}'
+            """
+
+        sql_query = sql_query.format(username)
+        self.cur.execute(sql_query)
+        self.conn.commit()
+
+        return self.is_tutor(username)
+
+    def delete_friend(self, username1, username2):
+
+        userid1 = self.get_id(username1)
+        userid2 = self.get_id(username2)
+
+        if userid1 == -1 or userid2 == -1:
+            return False
+
+        sql_query = """
+                DELETE 
+                FROM FRIENDS
+                WHERE user1 = '{}'
+                AND user2 = '{}'
+            """
+
+        sql_query = sql_query.format(userid1, userid2)
+        self.cur.execute(sql_query)
+        self.conn.commit()
+
+        sql_query = """
+                DELETE 
+                FROM FRIENDS
+                WHERE user1 = '{}'
+                AND user2 = '{}'
+            """
+
+        sql_query = sql_query.format(userid2, userid1)
+        self.cur.execute(sql_query)
+        self.conn.commit()
+
+        return not self.is_friends(username1, username2)
+
     def get_students(self, tutor):
 
         if not self.is_tutor(tutor):

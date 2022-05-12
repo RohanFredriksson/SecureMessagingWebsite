@@ -319,6 +319,20 @@ def get_friends():
     db.close()
     return page_view("friends", friends=friendlist)
 
+@post('/friend_search')
+def post_friend_search():
+    username = request.forms.get('username')
+    me = session.get_username()
+    db = sql.SQLDatabase()
+    if db.is_friends(me, username):
+        db.close()
+        redirect('/friends#' + username)
+    else:
+        db.close()
+        msg = "You are not friends with "+username+". If you'd like to chat with "+username+", please add "+username+" to your friendlist first."
+        session.send_notification(msg)
+        redirect('/friends')
+
 @post('/friends')
 def post_friends():
     
@@ -426,6 +440,23 @@ def manage():
     session.send_notification("You don't have permission to access this!")
     return redirect('/')
 
+@post('/manage_search')
+def post_manage_search():
+    
+    if not session.is_admin():
+        session.send_notification("You don't have permission to access this!")
+        redirect('/')
+    
+    username = request.forms.get('username')
+    me = session.get_username()
+    db = sql.SQLDatabase()
+    if db.get_id(username) != -1:
+        db.close()
+        redirect('/manage#' + username)
+    else:
+        db.close()
+        redirect('/manage')
+
 @get('/tutor')
 def tutor():
 
@@ -442,23 +473,26 @@ def tutor():
     db.close()
     return page_view("user_help", tutors=tutors)
 
-@post('/tutor')
-def post_chat():
-    """
+@post('/tutor_search')
+def post_tutor_search():
+    
     username = request.forms.get('username')
     me = session.get_username()
     db = sql.SQLDatabase()
-    friendlist = db.show_friendlist(session.get_username())
-    if db.is_friends(me, username):
-        db.close()
-        redirect('/#' + username)
+    if db.is_tutor(me):
+        if not db.is_tutor(username):
+            db.close()
+            redirect('/tutor#' + username)
+        else:
+            db.close()
+            redirect('/tutor')
     else:
-        db.close()
-        msg = "You are not friends with "+username+". If you'd like to chat with "+username+", please add "+username+" to your friendlist first."
-        session.send_notification(msg)
-        return page_view("chat", friends=friendlist)
-    """
-    redirect('/tutor')
+        if db.is_tutor(username):
+            db.close()
+            redirect('/tutor#' + username)
+        else:
+            db.close()
+            redirect('/tutor')
 
 
 @post('/change_key')
@@ -766,6 +800,47 @@ def delete_user():
 
     db = sql.SQLDatabase()
     if db.delete_user(user):
+        db.close()
+        rv = {'status': True}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db.close()
+    rv = {'status': False}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@post('/delete_friend')
+def delete_friend():
+
+    you = session.get_username()
+    friend = request.forms.get('username')
+
+    db = sql.SQLDatabase()
+    if db.delete_friend(you, friend):
+        db.close()
+        rv = {'status': True}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db.close()
+    rv = {'status': False}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@post('/promote_to_tutor')
+def promote_to_tutor():
+
+    if not session.is_admin():
+        rv = {"status": False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    # Handle the form processing
+    user = request.forms.get('username')
+
+    db = sql.SQLDatabase()
+    if db.promote_to_tutor(user):
         db.close()
         rv = {'status': True}
         response.content_type = 'application/json'

@@ -19,7 +19,7 @@
 <div id="left_column" style="padding:20px; width:360px; height: calc(100% - 118px);">
   <div class="content" style="width:100%; height:100%">
 
-    <form autocomplete="off" action="" method="post" style="padding-top: 10px">
+    <form autocomplete="off" action="/tutor_search" method="post" style="padding-top: 10px">
       <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
     </form>
 
@@ -246,7 +246,7 @@
       
         data = new URLSearchParams();
         data.append("username", user.username);
-        fetch("/get_public_key", {
+        fetch("/add_friend", {
           method: "POST",
           body: data,
         })
