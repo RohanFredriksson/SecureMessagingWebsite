@@ -711,6 +711,48 @@ def get_all_users():
     response.content_type = 'application/json'
     return dumps(rv)
 
+@post('/is_tutor')
+def post_is_tutor():
+
+    username = request.forms.get('username')
+    if username == None:
+        rv = {'status': False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db = sql.SQLDatabase()
+    if db.is_tutor(username):
+        db.close()
+        rv = {'status': True}
+        response.content_type = 'application/json'
+        return dumps(rv)
+    
+    db.close()
+    rv = {'status': False}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
+@post('/is_admin')
+def post_is_admin():
+
+    username = request.forms.get('username')
+    if username == None:
+        rv = {'status': False}
+        response.content_type = 'application/json'
+        return dumps(rv)
+
+    db = sql.SQLDatabase()
+    if db.is_admin(username):
+        db.close()
+        rv = {'status': True}
+        response.content_type = 'application/json'
+        return dumps(rv)
+    
+    db.close()
+    rv = {'status': False}
+    response.content_type = 'application/json'
+    return dumps(rv)
+
 @post('/delete_user')
 def delete_user():
 
@@ -725,12 +767,12 @@ def delete_user():
     db = sql.SQLDatabase()
     if db.delete_user(user):
         db.close()
-        rv = {'status': False}
+        rv = {'status': True}
         response.content_type = 'application/json'
         return dumps(rv)
 
     db.close()
-    rv = {'status': True}
+    rv = {'status': False}
     response.content_type = 'application/json'
     return dumps(rv)
 

@@ -1,29 +1,42 @@
-<center>
+<link rel="stylesheet" type="text/css" href="css/chat.css">
+
+<!-- Left Column -->
+<div id="left_column" style="float:left; padding:20px; width:360px; height: calc(100% - 118px);">
+  <div class="content" style="width:100%; height:100%">
+
+    <form autocomplete="off" action="" method="post" style="padding-top: 10px">
+      <center><input style="height: 40px; width:340px;" name="username" type="text" placeholder="Search" required/></center>
+    </form>
+
+    <!-- Friends List -->
+    <ul id="friends" style="margin-top: -6px;"></ul>
+
+  </div>
+</div>
+
+
+<div style="float:left; width: calc(100% - 420px); height: calc(100% - 118px); margin-top: 20px;">
 
   <!-- Add Friend Box -->
-  <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
+  <div id="add_friend" class="content" style="margin: auto; width: 400px; height: 300px; margin-top: 100px;">
     <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
-      <p style="margin:0;">Search a friend</p>
-      <form action="/friends" method="post">
+      <p style="margin:0;">Add New Friend</p>
+      <form autocomplete="off" action="/friends" method="post">
       <label><center><input style="height: 40px; width:250px;" name="username" type="text" placeholder="Enter username" required/></center></label>
       <label><center><input style="height: 40px; width:250px;" value="Add" type="submit"/></center></label>
       </form>
     </div>
   </div>
-  
-  <!-- Friends List -->
-  <div class="content" style="width: 400px; height: 300px; margin-top: 100px;">
-    <div style="margin-left: 40px; padding-top: 24px; width: 320px; height: 100%">
-      <ul id="friends">
-      </ul>
-    </div>
-  </div>
-  
-</center>
+
+
+
+</div>
 
 <script>
 
+  addFriendsForm = document.getElementById("add_friend");
   friendsList = document.getElementById("friends");
+  
   friends = "${friends}";
   friends = friends.replaceAll('\'','\"');
   
@@ -33,10 +46,25 @@
     exists = true;
   } catch {}
 
-  if (exists) {
-    friends.forEach(friend => {
-      friendsList.innerHTML += "<li>" + friend + "</li>";
-    });
+  function clearFriendsList() {
+    if (exists) {
+      friendsList.innerHTML = "";
+    }
   }
+
+  function setFriendsList(arr) {
+    if (exists) {
+      friends.forEach(friend => {
+        friendsList.innerHTML += "<li class='friend'><img src='img/profile.jpg' /><a href=\"#" + friend + "\">" + friend + "</a></li>";
+      });
+    }
+  }
+
+  function resetFriendsList(arr) {
+    clearFriendsList();
+    setFriendsList(arr);
+  }
+
+  setFriendsList(friends);
 
 </script>

@@ -427,6 +427,7 @@ class SQLDatabase():
 
         sql_query = sql_query.format(username)
         self.cur.execute(sql_query)
+        self.conn.commit()
 
         return not self.has_user(username)
 

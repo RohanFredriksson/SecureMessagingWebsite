@@ -69,9 +69,11 @@ def reset_db():
     '''
     db = sql.SQLDatabase()
     db.database_setup()
-    db.add_user('RohanFredriksson', 'RohanFredriksson', 'rohan.fredriksson@gmail.com', public=None, tutor=1, admin=1)
-    db.add_user('123412341234', '123412341234', 'rohan.fredriksson@gmail.com', public=None, tutor=1, admin=0)
-    db.add_user('TestTestTest', 'TestTestTest', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
+    db.add_user('AdminAlex', 'AdminAlex', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=1)
+    db.add_user('TutorJohn', 'TutorJohn', 'rohan.fredriksson@gmail.com', public=None, tutor=1, admin=0)
+    db.add_user('StudentSam', 'StudentSam', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
+    db.add_user('StudentSandra', 'StudentSandra', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
+    db.add_user('RohanFredriksson', 'RohanFredriksson', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
     return
 
 #-----------------------------------------------------------------------------

@@ -24,7 +24,7 @@
     </form>
 
     <!-- Tutors List -->
-    <ul id="tutors"></ul>
+    <ul id="tutors" style="margin-top: -6px;"></ul>
 
   </div>
 </div>
@@ -380,7 +380,7 @@
 
           removeHash();
           chatWindow.style.display = "none";
-          notificationDisplay(user.username + " does not have a public key. Cannot establish a secure channel.");
+          notificationDisplay("Public key could not be found. Can not establish a secure channel.");
           me = {
             username: null,
             publicKey: null,
