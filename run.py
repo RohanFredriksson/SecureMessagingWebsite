@@ -74,6 +74,7 @@ def reset_db():
     db.add_user('StudentSam', 'StudentSam', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
     db.add_user('StudentSandra', 'StudentSandra', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
     db.add_user('RohanFredriksson', 'RohanFredriksson', 'rohan.fredriksson@gmail.com', public=None, tutor=0, admin=0)
+    db.close()
     return
 
 #-----------------------------------------------------------------------------
